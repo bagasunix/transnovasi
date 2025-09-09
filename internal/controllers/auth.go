@@ -26,7 +26,7 @@ func NewAuthController(logger *log.Logger, repo repositories.Repositories, useca
 
 func (ac *AuthController) LoginUser(ctx *fiber.Ctx) error {
 	req := new(requests.Login)
-	result := new(responses.BaseResponse[*responses.ResponseLogin])
+	var result responses.BaseResponse[*responses.ResponseLogin]
 
 	if err := ctx.BodyParser(req); err != nil {
 		result.Code = fiber.StatusBadRequest
@@ -45,7 +45,7 @@ func (ac *AuthController) LoginUser(ctx *fiber.Ctx) error {
 
 func (ac *AuthController) LoginCustomer(ctx *fiber.Ctx) error {
 	req := new(requests.Login)
-	result := new(responses.BaseResponse[*responses.ResponseLogin])
+	var result responses.BaseResponse[*responses.ResponseLogin]
 
 	if err := ctx.BodyParser(req); err != nil {
 		result.Code = fiber.StatusBadRequest
