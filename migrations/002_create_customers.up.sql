@@ -11,7 +11,7 @@ CREATE TABLE customers (
     created_by INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL,
-    deleted_at TIMESTAMP NULL
+    deleted_at TIMESTAMP NULL,
 
     -- Add Foreign Key Constraint for customers.created_by
 CONSTRAINT fk_customers_created_by 
