@@ -32,10 +32,6 @@ func (g *gormProvider) Delete(ctx context.Context, id int) error {
 func (g *gormProvider) Updates(ctx context.Context, id int, m *domains.Customer) error {
 	return errors.ErrDuplicateValue(g.logger, "customers", g.db.WithContext(ctx).Where("id = ?", id).Updates(m).Error)
 }
-func (g *gormProvider) GetOneById(ctx context.Context, id int) (result domains.SingleResult[*domains.Customer]) {
-	result.Error = errors.ErrRecordNotFound(g.logger, "customers", g.db.WithContext(ctx).Preload("Vehicles").First(&result.Value, "id = ?", id).Error)
-	return result
-}
 func (g *gormProvider) GetOneByParams(ctx context.Context, params map[string]interface{}) (result domains.SingleResult[*domains.Customer]) {
 	result.Error = errors.ErrRecordNotFound(g.logger, "customers", g.db.WithContext(ctx).Preload("Vehicles").Where(params).First(&result.Value).Error)
 	return result
