@@ -16,7 +16,7 @@ type gormProvider struct {
 	logger *log.Logger
 }
 
-func NewGormCustomer(logger *log.Logger, db *gorm.DB) Repository {
+func NewGormVehicle(logger *log.Logger, db *gorm.DB) Repository {
 	g := new(gormProvider)
 	g.db = db
 	g.logger = logger
