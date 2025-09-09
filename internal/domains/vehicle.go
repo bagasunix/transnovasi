@@ -13,7 +13,8 @@ type Vehicle struct {
 	IsActive   int
 
 	CreatedBy int        `gorm:"column:created_by"`
-	CreatedAt *time.Time `gorm:"column:created_at"`
+	CreatedAt *time.Time `gorm:"column:created_at;autoautoCreateTime"`
+	UpdatedAt *time.Time `gorm:"column:created_at;autoUpdateTime"`
 	DeletedAt *time.Time `gorm:"column:deleted_at"`
 }
 
