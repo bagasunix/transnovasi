@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	errs "errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -29,8 +30,8 @@ type authUsecase struct {
 }
 
 type AuthUsecase interface {
-	LoginUser(ctx context.Context, req *requests.Login) (resonses *responses.BaseResponse[*responses.ResponseLogin])
-	LoginCustomer(ctx context.Context, req *requests.Login) (resonses *responses.BaseResponse[*responses.ResponseLogin])
+	LoginUser(ctx context.Context, request *requests.Login) (resonse responses.BaseResponse[*responses.ResponseLogin])
+	LoginCustomer(ctx context.Context, request *requests.Login) (resonse responses.BaseResponse[*responses.ResponseLogin])
 }
 
 func NewAuthUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories, redis *redis.Client) AuthUsecase {
@@ -43,35 +44,34 @@ func NewAuthUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo reposito
 	return n
 }
 
-func (au *authUsecase) LoginUser(ctx context.Context, req *requests.Login) (resonses *responses.BaseResponse[*responses.ResponseLogin]) {
-	responseBuild := new(responses.BaseResponse[*responses.ResponseLogin])
-	if req.Validate() != nil {
-		responseBuild.Code = fiber.StatusBadRequest
-		responseBuild.Message = "Validasi error"
-		responseBuild.Errors = req.Validate()
-		return responseBuild
+func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (resonse responses.BaseResponse[*responses.ResponseLogin]) {
+	if request.Validate() != nil {
+		resonse.Code = fiber.StatusBadRequest
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = request.Validate()
+		return resonse
 	}
 	// Check Login User
-	checkUser := au.repo.GetUser().GetOneByParams(ctx, map[string]interface{}{"email": req.Email})
+	checkUser := au.repo.GetUser().GetOneByParams(ctx, map[string]interface{}{"email": request.Email})
 	if len(checkUser.Value.Email) == 0 || errs.Is(checkUser.Error, gorm.ErrRecordNotFound) {
-		responseBuild.Code = fiber.StatusNotFound
-		responseBuild.Message = "Email tidak ditemukan"
-		responseBuild.Errors = errors.CustomError("email " + errors.ERR_NOT_FOUND)
-		return responseBuild
+		resonse.Code = fiber.StatusNotFound
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = errors.CustomError(fmt.Sprintf("%s %s", request.Email, gorm.ErrRecordNotFound))
+		return resonse
 	}
 
 	if checkUser.Error != nil && !errs.Is(checkUser.Error, gorm.ErrRecordNotFound) {
-		responseBuild.Code = fiber.StatusNotFound
-		responseBuild.Message = checkUser.Error.Error()
-		responseBuild.Errors = checkUser.Error
-		return responseBuild
+		resonse.Code = fiber.StatusNotFound
+		resonse.Message = checkUser.Error.Error()
+		resonse.Errors = checkUser.Error
+		return resonse
 	}
 
-	if !hash.ComparePasswords(checkUser.Value.Password, []byte(req.Password)) {
-		responseBuild.Code = fiber.StatusNotFound
-		responseBuild.Message = "username and password salah"
-		responseBuild.Errors = errors.ErrInvalidAttributes("username and password")
-		return responseBuild
+	if !hash.ComparePasswords(checkUser.Value.Password, []byte(request.Password)) {
+		resonse.Code = fiber.StatusNotFound
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = errors.ErrInvalidAttributes("email atau password salah, silahkan coba lagi")
+		return resonse
 	}
 
 	userBuild := responses.UserResponse{}
@@ -88,61 +88,64 @@ func (au *authUsecase) LoginUser(ctx context.Context, req *requests.Login) (reso
 
 	token, err := jwt.GenerateToken(au.cfg.Server.Token.JWTKey, *clm)
 	if err != nil {
-		responseBuild.Code = fiber.StatusConflict
-		responseBuild.Message = "Gagal membuat token"
-		responseBuild.Errors = err
-		return responseBuild
+		resonse.Code = fiber.StatusConflict
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = err
+		return resonse
 	}
 
 	redisKey := "authUser:token:" + strconv.Itoa(int(userBuild.ID))
 	err = au.redis.Set(ctx, redisKey, token, time.Hour).Err()
 	if err != nil {
-		responseBuild.Code = fiber.StatusConflict
-		responseBuild.Message = "Gagal menyimpan token di Redis"
-		responseBuild.Errors = err
-		return responseBuild
+		resonse.Code = fiber.StatusConflict
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = err
+		return resonse
 	}
 
 	resBuild := new(responses.ResponseLogin)
 	resBuild.ID = strconv.Itoa(int(userBuild.ID))
 	resBuild.Token = token
 
-	responseBuild.Data = &resBuild
-	responseBuild.Code = 200
-	responseBuild.Message = "Pengguna berhasil masuk"
-	return responseBuild
+	resonse.Data = &resBuild
+	resonse.Code = fiber.StatusOK
+	resonse.Message = "Pengguna berhasil masuk"
+	return resonse
 }
 
-func (au *authUsecase) LoginCustomer(ctx context.Context, req *requests.Login) (resonses *responses.BaseResponse[*responses.ResponseLogin]) {
-	responseBuild := new(responses.BaseResponse[*responses.ResponseLogin])
-	if req.Validate() != nil {
-		responseBuild.Code = fiber.StatusBadRequest
-		responseBuild.Message = "Validasi error"
-		responseBuild.Errors = req.Validate()
-		return responseBuild
+func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Login) (resonse responses.BaseResponse[*responses.ResponseLogin]) {
+	if request.Validate() != nil {
+		resonse.Code = fiber.StatusBadRequest
+		resonse.Message = "Validasi error"
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = request.Validate()
+		return resonse
 	}
 
 	// Check Login Customer
-	checkCust := au.repo.GetCustomer().GetOneByParams(ctx, map[string]interface{}{"email": req.Email})
+	checkCust := au.repo.GetCustomer().GetOneByParams(ctx, map[string]interface{}{"email": request.Email})
 	if len(checkCust.Value.Email) == 0 || errs.Is(checkCust.Error, gorm.ErrRecordNotFound) {
-		responseBuild.Code = fiber.StatusNotFound
-		responseBuild.Message = "Email tidak ditemukan"
-		responseBuild.Errors = errors.CustomError("email " + errors.ERR_NOT_FOUND)
-		return responseBuild
+		resonse.Code = fiber.StatusNotFound
+		resonse.Message = "Email tidak ditemukan"
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = errors.CustomError("email " + errors.ERR_NOT_FOUND)
+		return resonse
 	}
 
 	if checkCust.Error != nil && !errs.Is(checkCust.Error, gorm.ErrRecordNotFound) {
-		responseBuild.Code = fiber.StatusNotFound
-		responseBuild.Message = checkCust.Error.Error()
-		responseBuild.Errors = checkCust.Error
-		return responseBuild
+		resonse.Code = fiber.StatusNotFound
+		resonse.Message = checkCust.Error.Error()
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = checkCust.Error
+		return resonse
 	}
 
-	if !hash.ComparePasswords(checkCust.Value.Password, []byte(req.Password)) {
-		responseBuild.Code = fiber.StatusNotFound
-		responseBuild.Message = "username and password salah"
-		responseBuild.Errors = errors.ErrInvalidAttributes("username and password")
-		return responseBuild
+	if !hash.ComparePasswords(checkCust.Value.Password, []byte(request.Password)) {
+		resonse.Code = fiber.StatusNotFound
+		resonse.Message = "username and password salah"
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = errors.ErrInvalidAttributes("username and password")
+		return resonse
 	}
 
 	custBuild := responses.CustomerResponse{}
@@ -160,27 +163,29 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, req *requests.Login) (
 
 	token, err := jwt.GenerateToken(au.cfg.Server.Token.JWTKey, *clm)
 	if err != nil {
-		responseBuild.Code = fiber.StatusConflict
-		responseBuild.Message = "Gagal membuat token"
-		responseBuild.Errors = err
-		return responseBuild
+		resonse.Code = fiber.StatusConflict
+		resonse.Message = "Gagal membuat token"
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = err
+		return resonse
 	}
 
 	redisKey := "authCust:token:" + strconv.Itoa(int(custBuild.ID))
 	err = au.redis.Set(ctx, redisKey, token, 24*time.Hour).Err()
 	if err != nil {
-		responseBuild.Code = fiber.StatusConflict
-		responseBuild.Message = "Gagal menyimpan token di Redis"
-		responseBuild.Errors = err
-		return responseBuild
+		resonse.Code = fiber.StatusConflict
+		resonse.Message = "Gagal menyimpan token di Redis"
+		resonse.Message = "email atau password salah, silahkan coba lagi"
+		resonse.Errors = err
+		return resonse
 	}
 
 	resBuild := new(responses.ResponseLogin)
 	resBuild.ID = strconv.Itoa(int(custBuild.ID))
 	resBuild.Token = token
 
-	responseBuild.Data = &resBuild
-	responseBuild.Code = 200
-	responseBuild.Message = "Pengguna berhasil masuk"
-	return responseBuild
+	resonse.Data = &resBuild
+	resonse.Code = fiber.StatusOK
+	resonse.Message = "Pengguna berhasil masuk"
+	return resonse
 }
