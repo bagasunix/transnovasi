@@ -5,7 +5,7 @@ import "time"
 type Vehicle struct {
 	ID         int    `gorm:"primaryKey;autoIncrement"`
 	CustomerID int    `gorm:"not null"`
-	PlateNo    string `gorm:"not null"` // nomor polisi
+	PlateNo    string `gorm:"not null;unique"` // nomor polisi
 	Model      string // model/tipe kendaraan
 	Brand      string // merk
 	Color      string
