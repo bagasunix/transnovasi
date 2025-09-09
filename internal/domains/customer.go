@@ -5,10 +5,11 @@ import "time"
 type Customer struct {
 	ID       int    `gorm:"primaryKey;autoIncrement"`
 	Name     string `gorm:"type:varchar(100);not null"`
+	Sex      int
 	Email    string `gorm:"type:varchar(100);unique;not null"`
 	Address  string
 	Password string `gorm:"type:varchar(100);not null"`
-	RoleID   string `gorm:"not null;column:role_id"`
+	RoleID   int    `gorm:"not null;column:role_id"`
 	IsActive int    `gorm:"column:is_active"`
 
 	CreatedBy int        `gorm:"column:created_by"`
