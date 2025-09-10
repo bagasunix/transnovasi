@@ -29,6 +29,7 @@ type custUsecase struct {
 type CustomerUsecase interface {
 	Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse])
 	ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse])
+	ViewCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[*responses.CustomerResponse])
 }
 
 func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories) CustomerUsecase {
@@ -167,7 +168,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 
 	// Build response
 	resBuild := &responses.CustomerResponse{
-		ID:       int64(customerBuild.ID),
+		ID:       strconv.Itoa(customerBuild.ID),
 		Name:     customerBuild.Name,
 		Phone:    customerBuild.Phone,
 		Email:    customerBuild.Email,
@@ -231,7 +232,7 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 	// var custResponse []responses.CustomerResponse
 	for _, v := range resCust.Value {
 		custResponse = append(custResponse, responses.CustomerResponse{
-			ID:       int64(v.ID),
+			ID:       strconv.Itoa(v.ID),
 			Name:     v.Name,
 			Email:    v.Email,
 			Phone:    v.Phone,
@@ -249,5 +250,35 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 	}
 	response.Message = "Inquiry pengguna berhasil"
 	response.Code = fiber.StatusOK
+	return response
+}
+func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[*responses.CustomerResponse]) {
+	if err := request.Validate(); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Validasi error"
+		response.Errors = err.Error()
+		return response
+	}
+	paramID, _ := strconv.Atoi(request.Id.(string))
+	checkCustomer := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"id": paramID})
+	if checkCustomer.Error != nil {
+		response.Code = fiber.StatusNotFound
+		response.Message = "Pengguna tidak ditemukan"
+		response.Errors = checkCustomer.Error.Error()
+		return response
+	}
+
+	resCust := new(responses.CustomerResponse)
+	resCust.ID = strconv.Itoa(checkCustomer.Value.ID)
+	resCust.Name = checkCustomer.Value.Name
+	resCust.Email = checkCustomer.Value.Email
+	resCust.Phone = checkCustomer.Value.Phone
+	resCust.Address = checkCustomer.Value.Address
+	resCust.IsActive = strconv.Itoa(checkCustomer.Value.IsActive)
+
+	response.Data = &resCust
+	response.Message = "Pengguna ditemukan"
+	response.Code = fiber.StatusOK
+
 	return response
 }

@@ -3,6 +3,8 @@ package requests
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+
+	"github.com/bagasunix/transnovasi/pkg/errors"
 )
 
 type BaseRequest struct {
@@ -19,4 +21,15 @@ func (c BaseRequest) Validate() error {
 		validation.Field(&c.Offset, is.UTFNumeric.Error("Offset harus berupa angka")),
 		validation.Field(&c.Page, is.UTFNumeric.Error("Page harus berupa angka")),
 	)
+}
+
+type EntityId struct {
+	Id any `json:"id"`
+}
+
+func (v *EntityId) Validate() error {
+	if validation.IsEmpty(v.Id) {
+		return errors.ErrInvalidAttributes("id")
+	}
+	return nil
 }

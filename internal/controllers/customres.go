@@ -26,34 +26,54 @@ func NewCustomerController(logger *log.Logger, repo repositories.Repositories, u
 
 func (ac *CustomerController) Create(ctx *fiber.Ctx) error {
 	request := new(requests.Customer)
-	var result responses.BaseResponse[responses.CustomerResponse]
+	var response responses.BaseResponse[responses.CustomerResponse]
 	if err := ctx.BodyParser(request); err != nil {
-		result.Code = fiber.StatusBadRequest
-		result.Message = "Invalid request"
-		result.Errors = err.Error()
-		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = err.Error()
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	result = ac.usecase.Create(ctx.Context(), request)
-	if result.Errors != "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+	response = ac.usecase.Create(ctx.Context(), request)
+	if response.Errors != "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	return ctx.Status(result.Code).JSON(result)
+	return ctx.Status(response.Code).JSON(response)
 }
 func (c *CustomerController) GetAllUser(ctx *fiber.Ctx) error {
 	request := new(requests.BaseRequest)
-	var result responses.BaseResponse[[]responses.CustomerResponse]
+	var response responses.BaseResponse[[]responses.CustomerResponse]
 
 	if err := ctx.QueryParser(request); err != nil {
-		result.Code = fiber.StatusBadRequest
-		result.Message = "Invalid request"
-		result.Errors = err.Error()
-		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = err.Error()
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-	result = c.usecase.ListCustomer(ctx.Context(), request)
-	if result.Errors != "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+	response = c.usecase.ListCustomer(ctx.Context(), request)
+	if response.Errors != "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-	return ctx.Status(result.Code).JSON(result)
+	return ctx.Status(response.Code).JSON(response)
+}
+func (c *CustomerController) ViewUser(ctx *fiber.Ctx) error {
+	request := new(requests.EntityId)
+	var response responses.BaseResponse[*responses.CustomerResponse]
+
+	id := ctx.Params("id")
+	if id == "" {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID tidak ditemukan"
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	request.Id = id
+	response = c.usecase.ViewCustomer(ctx.Context(), request)
+	if response.Errors != "" {
+		return ctx.Status(response.Code).JSON(response)
+	}
+
+	return ctx.Status(response.Code).JSON(response)
 }

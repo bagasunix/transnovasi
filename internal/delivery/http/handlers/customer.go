@@ -9,4 +9,6 @@ import (
 func MakeCustHandler(controller *controllers.CustomerController, router fiber.Router, authMiddleware fiber.Handler) {
 	router.Post("", authMiddleware, controller.Create)
 	router.Get("", authMiddleware, controller.GetAllUser)
+	router.Get("/:id", authMiddleware, controller.ViewUser)
+
 }

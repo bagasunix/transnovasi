@@ -15,7 +15,7 @@ type Customer struct {
 	UpdatedAt *time.Time `gorm:"column:created_at;autoUpdateTime"`
 	DeletedAt *time.Time `gorm:"column:deleted_at"`
 
-	Vehicle []Vehicle `gorm:"foreignKey:CustomerID;references:ID"`
+	Vehicles []Vehicle `gorm:"foreignKey:CustomerID;references:ID"`
 }
 
 func (Customer) TableName() string {
