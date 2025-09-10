@@ -36,7 +36,7 @@ func (ac *CustomerController) Create(ctx *fiber.Ctx) error {
 
 	response = ac.usecase.Create(ctx.Context(), request)
 	if response.Errors != "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+		return ctx.Status(response.Code).JSON(response)
 	}
 
 	return ctx.Status(response.Code).JSON(response)
@@ -53,7 +53,7 @@ func (c *CustomerController) GetAllCustomer(ctx *fiber.Ctx) error {
 	}
 	response = c.usecase.ListCustomer(ctx.Context(), request)
 	if response.Errors != "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+		return ctx.Status(response.Code).JSON(response)
 	}
 	return ctx.Status(response.Code).JSON(response)
 }

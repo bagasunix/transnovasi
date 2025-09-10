@@ -81,7 +81,7 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 	userBuild.Name = checkUser.Value.Name
 	userBuild.Sex = strconv.Itoa(checkUser.Value.Sex)
 	userBuild.Email = checkUser.Value.Email
-	userBuild.RoleID = strconv.Itoa(checkUser.Value.RoleID)
+	userBuild.Role = checkUser.Value.Role
 	userBuild.IsActive = strconv.Itoa(checkUser.Value.IsActive)
 
 	clm := new(jwt.Claims)
@@ -143,7 +143,7 @@ func (au *authUsecase) Register(ctx context.Context, request *requests.User) (re
 	userBuild.Email = request.Email
 	userBuild.Password = hash.HashAndSalt([]byte(request.Password))
 	userBuild.IsActive = 1
-	userBuild.RoleID = request.RoleID
+	userBuild.Role = request.Role
 
 	if err := au.repo.GetUser().Create(ctx, userBuild); err != nil {
 		response.Code = fiber.StatusConflict
@@ -157,7 +157,7 @@ func (au *authUsecase) Register(ctx context.Context, request *requests.User) (re
 	resBuild.Name = userBuild.Name
 	resBuild.Sex = strconv.Itoa(userBuild.Sex)
 	resBuild.Email = userBuild.Email
-	resBuild.RoleID = strconv.Itoa(userBuild.RoleID)
+	resBuild.Role = userBuild.Role
 	resBuild.IsActive = strconv.Itoa(userBuild.IsActive)
 
 	response.Code = fiber.StatusCreated

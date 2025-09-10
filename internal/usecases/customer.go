@@ -51,6 +51,12 @@ func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo reposito
 
 func (c *custUsecase) Create(ctx context.Context, request *requests.CreateCustomer) (response responses.BaseResponse[responses.CustomerResponse]) {
 	authUser := middlewares.GetAuthClaimsFromContext(ctx)
+	if authUser.Role == "USER" {
+		response.Code = 401
+		response.Message = "Tidak memiliki akses"
+		response.Errors = errors.ERR_NOT_AUTHORIZED
+		return response
+	}
 	if request.Validate() != nil {
 		response.Code = fiber.StatusBadRequest
 		response.Message = "email atau password salah, silahkan coba lagi"
@@ -214,6 +220,13 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.CreateCustom
 	return response
 }
 func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse]) {
+	authUser := middlewares.GetAuthClaimsFromContext(ctx)
+	if authUser.Role == "USER" {
+		response.Code = 401
+		response.Message = "Tidak memiliki akses"
+		response.Errors = errors.ERR_NOT_AUTHORIZED
+		return response
+	}
 	if err := request.Validate(); err != nil {
 		response.Code = 400
 		response.Message = "Error Validasi"
@@ -365,6 +378,13 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 	return response
 }
 func (c *custUsecase) UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse]) {
+	authUser := middlewares.GetAuthClaimsFromContext(ctx)
+	if authUser.Role == "USER" {
+		response.Code = 401
+		response.Message = "Tidak memiliki akses"
+		response.Errors = errors.ERR_NOT_AUTHORIZED
+		return response
+	}
 	if err := request.Validate(); err != nil {
 		response.Code = fiber.StatusBadRequest
 		response.Message = "Validasi error"
@@ -434,8 +454,14 @@ func (c *custUsecase) UpdateCustomer(ctx context.Context, request *requests.Upda
 	response.Message = "Berhsail memperbarui pelanggan"
 	return response
 }
-
 func (c *custUsecase) DeleteCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[any]) {
+	authUser := middlewares.GetAuthClaimsFromContext(ctx)
+	if authUser.Role == "USER" || authUser.Role == "OPERATOR" {
+		response.Code = 401
+		response.Message = "Tidak memiliki akses"
+		response.Errors = errors.ERR_NOT_AUTHORIZED
+		return response
+	}
 	if err := request.Validate(); err != nil {
 		response.Code = fiber.StatusBadRequest
 		response.Message = "Validasi error"

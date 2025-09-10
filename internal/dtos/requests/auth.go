@@ -22,7 +22,7 @@ type User struct {
 	Sex      int    `json:"sex"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	RoleID   int    `json:"role_id"`
+	Role     string `json:"role"`
 }
 
 func (u User) Validate() error {
