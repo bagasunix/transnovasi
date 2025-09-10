@@ -82,6 +82,20 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 		CreatedBy: strUserID,
 	}
 
+	tx := c.repo.GetUser().GetConnection().(*gorm.DB).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err = c.repo.GetCustomer().CreateTx(ctx, tx, customerBuild); err != nil {
+		response.Code = fiber.StatusConflict
+		response.Message = "Gagal membuat pengguna"
+		response.Errors = err.Error()
+		return response
+	}
+
 	vehicles := make([]domains.Vehicle, 0, len(request.Vehicle))
 	if len(request.Vehicle) != 0 {
 		platSet := make(map[string]struct{}, len(request.Vehicle))
@@ -127,22 +141,9 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 				Model:      v.Model,
 				PlateNo:    v.PlateNo,
 				Year:       intYear,
+				CreatedBy:  strUserID,
 			})
 		}
-	}
-
-	tx := c.repo.GetUser().GetConnection().(*gorm.DB).Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	if err = c.repo.GetCustomer().CreateTx(ctx, tx, customerBuild); err != nil {
-		response.Code = fiber.StatusConflict
-		response.Message = "Gagal membuat pengguna"
-		response.Errors = err.Error()
-		return response
 	}
 
 	if len(vehicles) != 0 {
@@ -177,6 +178,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 		resBuild.Vehicle = make([]responses.VehicleResponse, 0, len(vehicles))
 		for _, v := range vehicles {
 			resBuild.Vehicle = append(resBuild.Vehicle, responses.VehicleResponse{
+				ID:       strconv.Itoa(v.ID),
 				Brand:    v.Brand,
 				Color:    v.Color,
 				FuelType: v.FuelType,
@@ -184,6 +186,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 				Model:    v.Model,
 				PlateNo:  v.PlateNo,
 				Year:     v.Year,
+				IsActive: v.IsActive,
 			})
 		}
 	}
