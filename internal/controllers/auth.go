@@ -25,16 +25,16 @@ func NewAuthController(logger *log.Logger, repo repositories.Repositories, useca
 }
 
 func (ac *AuthController) LoginUser(ctx *fiber.Ctx) error {
-	req := new(requests.Login)
+	request := new(requests.Login)
 	var result responses.BaseResponse[*responses.ResponseLogin]
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		result.Code = fiber.StatusBadRequest
 		result.Message = "Invalid request"
 		result.Errors = err.Error()
 		return ctx.Status(fiber.StatusBadRequest).JSON(result)
 	}
 
-	result = ac.usecase.LoginUser(ctx.Context(), req)
+	result = ac.usecase.LoginUser(ctx.Context(), request)
 	if result.Errors != "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(result)
 	}
@@ -43,16 +43,16 @@ func (ac *AuthController) LoginUser(ctx *fiber.Ctx) error {
 }
 
 func (ac *AuthController) Register(ctx *fiber.Ctx) error {
-	req := new(requests.User)
+	request := new(requests.User)
 	var result responses.BaseResponse[*responses.UserResponse]
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		result.Code = fiber.StatusBadRequest
 		result.Message = "Invalid request"
 		result.Errors = err.Error()
 		return ctx.Status(fiber.StatusBadRequest).JSON(result)
 	}
 
-	result = ac.usecase.Register(ctx.Context(), req)
+	result = ac.usecase.Register(ctx.Context(), request)
 	if result.Errors != "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(result)
 	}

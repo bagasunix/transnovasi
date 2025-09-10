@@ -28,6 +28,7 @@ type custUsecase struct {
 
 type CustomerUsecase interface {
 	Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse])
+	ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse])
 }
 
 func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories) CustomerUsecase {
@@ -194,5 +195,59 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 	response.Code = fiber.StatusOK
 	response.Message = "Sukses mendaftar"
 	response.Data = resBuild
+	return response
+}
+
+func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse]) {
+	if err := request.Validate(); err != nil {
+		response.Code = 400
+		response.Message = "Error Validasi"
+		response.Errors = err.Error()
+		return response
+	}
+	intPage, _ := strconv.Atoi(request.Page)
+	intLimit, _ := strconv.Atoi(request.Limit)
+
+	offset, limit := helpers.CalculateOffsetAndLimit(intPage, intLimit)
+
+	resCust := c.repo.GetCustomer().GetAll(ctx, limit, offset, request.Search)
+	if resCust.Error != nil {
+		response.Code = 400
+		response.Message = "Gagal menarik data"
+		response.Errors = resCust.Error.Error()
+		return response
+	}
+	// Calculate total items and total pages
+	totalItems, err := c.repo.GetCustomer().CountCustomer(ctx, request.Search)
+	if err != nil {
+		response.Code = 400
+		response.Message = "Gagal menarik data"
+		response.Errors = err.Error()
+		return response
+	}
+	totalPages := (totalItems + limit - 1) / limit
+
+	custResponse := make([]responses.CustomerResponse, 0, len(resCust.Value))
+	// var custResponse []responses.CustomerResponse
+	for _, v := range resCust.Value {
+		custResponse = append(custResponse, responses.CustomerResponse{
+			ID:       int64(v.ID),
+			Name:     v.Name,
+			Email:    v.Email,
+			Phone:    v.Phone,
+			Address:  v.Address,
+			IsActive: strconv.Itoa(v.IsActive),
+		})
+	}
+
+	response.Data = &custResponse
+	response.Paging = &responses.PageMetadata{
+		Page:      intPage,
+		Size:      limit,
+		TotalItem: totalItems,
+		TotalPage: totalPages,
+	}
+	response.Message = "Inquiry pengguna berhasil"
+	response.Code = fiber.StatusOK
 	return response
 }

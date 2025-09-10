@@ -25,19 +25,35 @@ func NewCustomerController(logger *log.Logger, repo repositories.Repositories, u
 }
 
 func (ac *CustomerController) Create(ctx *fiber.Ctx) error {
-	req := new(requests.Customer)
+	request := new(requests.Customer)
 	var result responses.BaseResponse[responses.CustomerResponse]
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		result.Code = fiber.StatusBadRequest
 		result.Message = "Invalid request"
 		result.Errors = err.Error()
 		return ctx.Status(fiber.StatusBadRequest).JSON(result)
 	}
 
-	result = ac.usecase.Create(ctx.Context(), req)
+	result = ac.usecase.Create(ctx.Context(), request)
 	if result.Errors != "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(result)
 	}
 
+	return ctx.Status(result.Code).JSON(result)
+}
+func (c *CustomerController) GetAllUser(ctx *fiber.Ctx) error {
+	request := new(requests.BaseRequest)
+	var result responses.BaseResponse[[]responses.CustomerResponse]
+
+	if err := ctx.QueryParser(request); err != nil {
+		result.Code = fiber.StatusBadRequest
+		result.Message = "Invalid request"
+		result.Errors = err.Error()
+		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+	}
+	result = c.usecase.ListCustomer(ctx.Context(), request)
+	if result.Errors != "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+	}
 	return ctx.Status(result.Code).JSON(result)
 }

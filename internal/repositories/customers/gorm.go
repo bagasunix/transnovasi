@@ -40,7 +40,11 @@ func (g *gormProvider) GetOneByParams(ctx context.Context, params map[string]int
 	return result
 }
 func (g *gormProvider) GetAll(ctx context.Context, limit int, offset int, search string) (result domains.SliceResult[domains.Customer]) {
-	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), g.db.WithContext(ctx).Limit(int(limit)).Preload("Vehicles").Find(&result.Value).Error)
+	query := g.db.WithContext(ctx).Limit(limit).Offset(offset)
+	if search != "" {
+		query = query.Where("name LIKE ? OR email LIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), query.Find(&result.Value).Error)
 	return result
 }
 func (g *gormProvider) GetConnection() (T any) {
@@ -48,4 +52,16 @@ func (g *gormProvider) GetConnection() (T any) {
 }
 func (g *gormProvider) GetModelName() string {
 	return "customers"
+}
+func (g *gormProvider) CountCustomer(ctx context.Context, search string) (int, error) {
+	var count int64
+	query := g.db.WithContext(ctx).Model(&domains.Customer{})
+	if search != "" {
+		query = query.Where("name LIKE ? OR email LIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+	err := query.Count(&count).Error
+	if err != nil {
+		return 0, errors.ErrSomethingWrong(g.logger, err)
+	}
+	return int(count), nil
 }

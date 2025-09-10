@@ -13,6 +13,7 @@ type Common interface {
 	Delete(ctx context.Context, id int) error
 	Updates(ctx context.Context, id int, m *domains.Customer) error
 	GetAll(ctx context.Context, limit int, offset int, search string) (result domains.SliceResult[domains.Customer])
+	CountCustomer(ctx context.Context, search string) (int, error)
 
 	GetOneByParams(ctx context.Context, params map[string]interface{}) (result domains.SingleResult[domains.Customer])
 }
