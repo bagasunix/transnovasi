@@ -106,7 +106,7 @@ func (c *Cfg) GetRedisDSN() string {
 
 // Fungsi untuk menginisialisasi konfigurasi
 func InitConfig(ctx context.Context, logger *log.Logger) *Cfg {
-	config, err := LoadCfg(ctx, "../")
+	config, err := LoadCfg(ctx, "./")
 	if err != nil {
 		logger.Fatal().Err(err).Msg("cannot load config")
 		os.Exit(1)

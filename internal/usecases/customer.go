@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-	errs "errors"
 	"strconv"
 	"strings"
 
@@ -96,14 +95,14 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 			}
 			platSet[v.PlateNo] = struct{}{}
 
-			checkPlat := c.repo.GetVehicle().GetOneByParams(ctx, map[string]interface{}{"plat_no": v.PlateNo})
+			checkPlat := c.repo.GetVehicle().GetOneByParams(ctx, map[string]interface{}{"plate_no": v.PlateNo})
 			if checkPlat.Value.PlateNo == v.PlateNo {
 				response.Code = fiber.StatusConflict
 				response.Message = "Kendaraan sudah terdaftar"
 				response.Errors = "vehicle " + errors.ERR_ALREADY_EXISTS
 				return response
 			}
-			if checkPlat.Error != nil && !errs.Is(checkPlat.Error, gorm.ErrRecordNotFound) {
+			if checkPlat.Error != nil && !strings.Contains(checkPlat.Error.Error(), "not found") {
 				response.Code = fiber.StatusConflict
 				response.Message = "Validasi vehicle invalid"
 				response.Errors = checkPlat.Error.Error()

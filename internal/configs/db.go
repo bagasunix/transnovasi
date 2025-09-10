@@ -57,7 +57,7 @@ func NewPostgresDB(ctx context.Context, cfg *configs.DBConfig, logger *log.Logge
 	driver, err := migPostgres.WithInstance(sqlDB, &migPostgres.Config{})
 	errors.HandlerWithOSExit(logger, err, "failed to initialize postgres driver")
 
-	migrationsPath := "../migrations"
+	migrationsPath := "./migrations"
 	// Buat instance migrasi
 	m, err := migrate.NewWithDatabaseInstance("file://"+migrationsPath, "postgres", driver)
 	errors.HandlerWithOSExit(logger, err, "failed to create migration instance")
