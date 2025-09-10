@@ -67,16 +67,28 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 		return response
 	}
 
-	customerBuild := new(domains.Customer)
-	customerBuild.Name = request.Name
-	customerBuild.Email = request.Email
-	customerBuild.Phone = *phone
-	customerBuild.Address = request.Address
-	customerBuild.IsActive = 1
+	// Build customer
+	customerBuild := &domains.Customer{
+		Name:     request.Name,
+		Email:    request.Email,
+		Phone:    *phone,
+		Address:  request.Address,
+		IsActive: 1,
+	}
 
-	var vehicles []domains.Vehicle
+	vehicles := make([]domains.Vehicle, 0, len(request.Vehicle))
 	if len(request.Vehicle) != 0 {
+		platSet := make(map[string]struct{}, len(request.Vehicle))
 		for _, v := range request.Vehicle {
+			// Cek duplikat dalam request
+			if _, exists := platSet[v.PlateNo]; exists {
+				response.Code = fiber.StatusBadRequest
+				response.Message = "Nomor plat duplikat dalam request"
+				response.Errors = "Plat " + v.PlateNo + " sudah ada di request"
+				return response
+			}
+			platSet[v.PlateNo] = struct{}{}
+
 			checkPlat := c.repo.GetVehicle().GetOneByParams(ctx.Context(), map[string]interface{}{"plat_no": v.PlateNo})
 			if checkPlat.Value.PlateNo == v.PlateNo {
 				response.Code = fiber.StatusConflict
@@ -91,23 +103,34 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 				return response
 			}
 
-			intYear, _ := strconv.Atoi(v.Year)
+			intYear, convErr := strconv.Atoi(v.Year)
+			if convErr != nil {
+				return responses.BaseResponse[responses.CustomerResponse]{
+					Code:    fiber.StatusBadRequest,
+					Message: "Tahun kendaraan tidak valid",
+					Errors:  convErr.Error(),
+				}
+			}
 
-			vehicleBuild := new(domains.Vehicle)
-			vehicleBuild.Brand = v.Brand
-			vehicleBuild.Color = v.Color
-			vehicleBuild.CustomerID = customerBuild.ID
-			vehicleBuild.FuelType = v.FuelType
-			vehicleBuild.MaxSpeed = v.MaxSpeed
-			vehicleBuild.Model = v.Model
-			vehicleBuild.PlateNo = v.PlateNo
-			vehicleBuild.Year = intYear
-
-			vehicles = append(vehicles, *vehicleBuild)
+			vehicles = append(vehicles, domains.Vehicle{
+				Brand:      v.Brand,
+				Color:      v.Color,
+				CustomerID: customerBuild.ID,
+				FuelType:   v.FuelType,
+				MaxSpeed:   v.MaxSpeed,
+				Model:      v.Model,
+				PlateNo:    v.PlateNo,
+				Year:       intYear,
+			})
 		}
 	}
 
 	tx := c.repo.GetUser().GetConnection().(*gorm.DB).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	if err = c.repo.GetCustomer().CreateTx(ctx.Context(), tx, customerBuild); err != nil {
 		response.Code = fiber.StatusConflict
@@ -116,11 +139,15 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 		return response
 	}
 
-	if err = c.repo.GetVehicle().CreateBulkTx(ctx.Context(), tx, vehicles); err != nil {
-		response.Code = fiber.StatusConflict
-		response.Message = "Gagal membuat pengguna"
-		response.Errors = err.Error()
-		return response
+	if len(vehicles) != 0 {
+		if err := c.repo.GetVehicle().CreateBulkTx(ctx.Context(), tx, vehicles); err != nil {
+			tx.Rollback()
+			return responses.BaseResponse[responses.CustomerResponse]{
+				Code:    fiber.StatusConflict,
+				Message: "Gagal membuat pengguna",
+				Errors:  err.Error(),
+			}
+		}
 	}
 
 	if err = tx.Commit().Error; err != nil {
@@ -130,26 +157,28 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 		return response
 	}
 
-	resBuild := new(responses.CustomerResponse)
-	resBuild.ID = int64(customerBuild.ID)
-	resBuild.Name = customerBuild.Name
-	resBuild.Phone = customerBuild.Phone
-	resBuild.Email = customerBuild.Email
-	resBuild.Address = customerBuild.Address
-	resBuild.IsActive = strconv.Itoa(customerBuild.IsActive)
+	// Build response
+	resBuild := &responses.CustomerResponse{
+		ID:       int64(customerBuild.ID),
+		Name:     customerBuild.Name,
+		Phone:    customerBuild.Phone,
+		Email:    customerBuild.Email,
+		Address:  customerBuild.Address,
+		IsActive: strconv.Itoa(customerBuild.IsActive),
+	}
 
-	if len(vehicles) != 0 {
+	if len(vehicles) > 0 {
+		resBuild.Vehicle = make([]responses.VehicleResponse, 0, len(vehicles))
 		for _, v := range vehicles {
-			vehicle := new(responses.VehicleResponse)
-			vehicle.Brand = v.Brand
-			vehicle.Color = v.Color
-			vehicle.FuelType = v.FuelType
-			vehicle.MaxSpeed = v.MaxSpeed
-			vehicle.Model = v.Model
-			vehicle.PlateNo = v.PlateNo
-			vehicle.Year = v.Year
-
-			resBuild.Vehicle = append(resBuild.Vehicle, *vehicle)
+			resBuild.Vehicle = append(resBuild.Vehicle, responses.VehicleResponse{
+				Brand:    v.Brand,
+				Color:    v.Color,
+				FuelType: v.FuelType,
+				MaxSpeed: v.MaxSpeed,
+				Model:    v.Model,
+				PlateNo:  v.PlateNo,
+				Year:     v.Year,
+			})
 		}
 	}
 
