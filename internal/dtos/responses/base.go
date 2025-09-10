@@ -5,7 +5,7 @@ type BaseResponse[T any] struct {
 	Message string        `json:"message"`
 	Data    *T            `json:"data,omitempty"`
 	Paging  *PageMetadata `json:"paging,omitempty"`
-	Errors  error         `json:"errors,omitempty"`
+	Errors  string        `json:"errors,omitempty"`
 }
 
 type PageMetadata struct {

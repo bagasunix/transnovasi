@@ -16,7 +16,6 @@ import (
 	"github.com/bagasunix/transnovasi/internal/dtos/responses"
 	"github.com/bagasunix/transnovasi/internal/repositories"
 	"github.com/bagasunix/transnovasi/pkg/env"
-	"github.com/bagasunix/transnovasi/pkg/errors"
 	"github.com/bagasunix/transnovasi/pkg/hash"
 	"github.com/bagasunix/transnovasi/pkg/jwt"
 )
@@ -48,7 +47,7 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 	if request.Validate() != nil {
 		resonse.Code = fiber.StatusBadRequest
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = request.Validate()
+		resonse.Errors = request.Validate().Error()
 		return resonse
 	}
 	// Check Login User
@@ -56,21 +55,21 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 	if len(checkUser.Value.Email) == 0 || errs.Is(checkUser.Error, gorm.ErrRecordNotFound) {
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = errors.CustomError(fmt.Sprintf("%s %s", request.Email, gorm.ErrRecordNotFound))
+		resonse.Errors = fmt.Sprintf("%s %s", request.Email, gorm.ErrRecordNotFound)
 		return resonse
 	}
 
 	if checkUser.Error != nil && !errs.Is(checkUser.Error, gorm.ErrRecordNotFound) {
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = checkUser.Error.Error()
-		resonse.Errors = checkUser.Error
+		resonse.Errors = checkUser.Error.Error()
 		return resonse
 	}
 
 	if !hash.ComparePasswords(checkUser.Value.Password, []byte(request.Password)) {
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = errors.ErrInvalidAttributes("email atau password salah, silahkan coba lagi")
+		resonse.Errors = fmt.Sprint("email atau password salah, silahkan coba lagi")
 		return resonse
 	}
 
@@ -90,7 +89,7 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 	if err != nil {
 		resonse.Code = fiber.StatusConflict
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = err
+		resonse.Errors = err.Error()
 		return resonse
 	}
 
@@ -99,7 +98,7 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 	if err != nil {
 		resonse.Code = fiber.StatusConflict
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = err
+		resonse.Errors = err.Error()
 		return resonse
 	}
 
@@ -118,7 +117,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusBadRequest
 		resonse.Message = "Validasi error"
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = request.Validate()
+		resonse.Errors = request.Validate().Error()
 		return resonse
 	}
 
@@ -128,7 +127,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = "Email tidak ditemukan"
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = errors.CustomError("email " + errors.ERR_NOT_FOUND)
+		resonse.Errors = fmt.Sprintf("%s %s", request.Email, gorm.ErrRecordNotFound)
 		return resonse
 	}
 
@@ -136,7 +135,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = checkCust.Error.Error()
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = checkCust.Error
+		resonse.Errors = checkCust.Error.Error()
 		return resonse
 	}
 
@@ -144,7 +143,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = "username and password salah"
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = errors.ErrInvalidAttributes("username and password")
+		resonse.Errors = fmt.Sprint("email atau password salah, silahkan coba lagi")
 		return resonse
 	}
 
@@ -166,7 +165,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusConflict
 		resonse.Message = "Gagal membuat token"
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = err
+		resonse.Errors = err.Error()
 		return resonse
 	}
 
@@ -176,7 +175,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusConflict
 		resonse.Message = "Gagal menyimpan token di Redis"
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = err
+		resonse.Errors = err.Error()
 		return resonse
 	}
 
