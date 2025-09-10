@@ -9,7 +9,6 @@ import (
 
 	"github.com/bagasunix/transnovasi/internal/domains"
 	"github.com/bagasunix/transnovasi/internal/repositories"
-	"github.com/bagasunix/transnovasi/pkg/jwt"
 )
 
 // Middleware generator
@@ -30,9 +29,10 @@ func LoggingMiddleware(logger *log.Logger, r repositories.Repositories) fiber.Ha
 		statusCode := strconv.Itoa(c.Response().StatusCode())
 
 		// ambil user & customer ID dari locals (kalau ada)
+		authUser := GetAuthClaims(c)
 		userID := "0"
-		if c.Locals("user") != nil {
-			userID = strconv.Itoa(int(c.Locals("user").(*jwt.Claims).User.ID))
+		if c.Locals(string(authClaimsKey)) != nil {
+			userID = authUser.ID
 		}
 
 		// simpan ke database

@@ -3,12 +3,12 @@ package responses
 import "time"
 
 type UserResponse struct {
-	ID       int64  `json:"id"`
+	ID       string `json:"id"`
 	Name     string `json:"name"`
-	Sex      int    `json:"sex"`
+	Sex      string `json:"sex"`
 	Email    string `json:"email"`
-	RoleID   int    `json:"role_id"`
-	IsActive int16  `json:"is_active"`
+	RoleID   string `json:"role_id"`
+	IsActive string `json:"is_active"`
 
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	CreatedAt time.Time  `json:"created_at"`

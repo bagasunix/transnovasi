@@ -13,6 +13,7 @@ import (
 	"github.com/bagasunix/transnovasi/internal/domains"
 	"github.com/bagasunix/transnovasi/internal/dtos/requests"
 	"github.com/bagasunix/transnovasi/internal/dtos/responses"
+	"github.com/bagasunix/transnovasi/internal/middlewares"
 	"github.com/bagasunix/transnovasi/internal/repositories"
 	"github.com/bagasunix/transnovasi/pkg/env"
 	"github.com/bagasunix/transnovasi/pkg/errors"
@@ -40,6 +41,7 @@ func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo reposito
 }
 
 func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse]) {
+	authUser := middlewares.GetAuthClaimsFromContext(ctx)
 	if request.Validate() != nil {
 		response.Code = fiber.StatusBadRequest
 		response.Message = "email atau password salah, silahkan coba lagi"
@@ -47,7 +49,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 		return response
 	}
 
-	checkEmail := c.repo.GetCustomer().GetOneByParams(ctx, map[string]interface{}{"email": request.Email})
+	checkEmail := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"email": request.Email})
 	if checkEmail.Value.Email == request.Email {
 		response.Code = fiber.StatusConflict
 		response.Message = "Email sudah terdaftar"
@@ -69,13 +71,16 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 		return response
 	}
 
+	strUserID, _ := strconv.Atoi(authUser.ID)
+
 	// Build customer
 	customerBuild := &domains.Customer{
-		Name:     request.Name,
-		Email:    request.Email,
-		Phone:    *phone,
-		Address:  request.Address,
-		IsActive: 1,
+		Name:      request.Name,
+		Email:     request.Email,
+		Phone:     *phone,
+		Address:   request.Address,
+		IsActive:  1,
+		CreatedBy: strUserID,
 	}
 
 	vehicles := make([]domains.Vehicle, 0, len(request.Vehicle))

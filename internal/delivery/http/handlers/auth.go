@@ -8,4 +8,5 @@ import (
 
 func MakeAuthHandler(controller *controllers.AuthController, router fiber.Router) {
 	router.Post("", controller.LoginUser)
+	router.Post("register", controller.Register)
 }

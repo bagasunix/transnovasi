@@ -6,7 +6,7 @@ CREATE TABLE users (
     sex SMALLINT NOT NULL, -- 1=male, 2=female
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(100) NOT NULL,
-    role_id VARCHAR NOT NULL,
+    role_id SMALLINT NOT NULL,
     is_active INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL,

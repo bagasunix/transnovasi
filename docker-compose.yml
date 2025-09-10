@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: transnovasi_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Asia/Jakarta
+    volumes:
+      - ./config.yml:/app/config.yml:ro
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:latest
+    # container_name: transnovasi_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: transnovasi
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    # container_name: transnovasi_redis
+    restart: unless-stopped
+    ports:
+      - "6378:6378"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:

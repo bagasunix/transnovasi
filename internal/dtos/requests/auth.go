@@ -16,3 +16,20 @@ func (l Login) Validate() error {
 		validation.Field(&l.Password, validation.Required, validation.Length(6, 0)),
 	)
 }
+
+type User struct {
+	Name     string `json:"name"`
+	Sex      int    `json:"sex"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	RoleID   int    `json:"role_id"`
+}
+
+func (u User) Validate() error {
+	return validation.ValidateStruct(&u,
+		validation.Field(&u.Email, validation.Required, is.Email),
+		validation.Field(&u.Password, validation.Required, validation.Length(6, 0)),
+		validation.Field(&u.Sex, validation.Required, validation.In(1, 2)),
+		validation.Field(&u.Name, validation.Required),
+	)
+}

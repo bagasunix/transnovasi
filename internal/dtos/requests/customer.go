@@ -1,6 +1,8 @@
 package requests
 
 import (
+	"regexp"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 )
@@ -18,5 +20,6 @@ func (c Customer) Validate() error {
 	return validation.ValidateStruct(&c,
 		validation.Field(&c.Email, validation.Required, is.Email),
 		validation.Field(&c.Name, validation.Required),
+		validation.Field(&c.Phone, validation.Length(0, 14), validation.Match(regexp.MustCompile(`^\d*$`)).Error("phone must be numeric")),
 	)
 }

@@ -9,16 +9,14 @@ import (
 )
 
 type Claims struct {
-	User     *responses.UserResponse     `json:"user,omitempty"`
-	Customer *responses.CustomerResponse `json:"customer,omitempty"`
+	User *responses.UserResponse `json:"user,omitempty"`
 	jwt.StandardClaims
 }
 
 // Fungsi untuk membuat Claims langsung
 func NewClaims(user *responses.UserResponse, customer *responses.CustomerResponse, expiresAt time.Time) *Claims {
 	return &Claims{
-		User:     user,
-		Customer: customer,
+		User: user,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt.Unix(),
 		},
