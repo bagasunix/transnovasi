@@ -8,6 +8,8 @@ CREATE TABLE vehicles (
     color VARCHAR,
     year INTEGER,
     is_active INTEGER DEFAULT 1,
+    fuel_type VARCHAR(50), -- GASOLINE, DIESEL, ELECTRIC, HYBRID
+    max_speed INTEGER, -- km/h
     created_by INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

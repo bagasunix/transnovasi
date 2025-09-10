@@ -24,19 +24,28 @@ func NewGormUser(logger *log.Logger, db *gorm.DB) Repository {
 }
 
 func (g *gormProvider) Create(ctx context.Context, m *domains.User) error {
-	return errors.ErrDuplicateValue(g.logger, "users", g.db.WithContext(ctx).Create(m).Error)
+	return errors.ErrDuplicateValue(g.logger, g.GetModelName(), g.db.WithContext(ctx).Create(m).Error)
+}
+func (g *gormProvider) CreateTx(ctx context.Context, tx any, m *domains.User) error {
+	return errors.ErrDuplicateValue(g.logger, g.GetModelName(), tx.(*gorm.DB).WithContext(ctx).Create(m).Error)
 }
 func (g *gormProvider) Delete(ctx context.Context, id int) error {
 	return errors.ErrSomethingWrong(g.logger, g.db.WithContext(ctx).Where("id = ?", id).Updates(map[string]interface{}{"is_active": 0, "deleted_at": time.Now()}).Error)
 }
 func (g *gormProvider) Updates(ctx context.Context, id int, m *domains.User) error {
-	return errors.ErrDuplicateValue(g.logger, "users", g.db.WithContext(ctx).Where("id = ?", id).Updates(m).Error)
+	return errors.ErrDuplicateValue(g.logger, g.GetModelName(), g.db.WithContext(ctx).Where("id = ?", id).Updates(m).Error)
 }
 func (g *gormProvider) GetOneByParams(ctx context.Context, params map[string]interface{}) (result domains.SingleResult[*domains.User]) {
-	result.Error = errors.ErrRecordNotFound(g.logger, "users", g.db.WithContext(ctx).Where(params).First(&result.Value).Error)
+	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), g.db.WithContext(ctx).Where(params).First(&result.Value).Error)
 	return result
 }
 func (g *gormProvider) GetAll(ctx context.Context, limit int, offset int, search string) (result domains.SliceResult[domains.User]) {
-	result.Error = errors.ErrRecordNotFound(g.logger, "users", g.db.WithContext(ctx).Limit(int(limit)).Find(&result.Value).Error)
+	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), g.db.WithContext(ctx).Limit(int(limit)).Find(&result.Value).Error)
 	return result
+}
+func (g *gormProvider) GetConnection() (T any) {
+	return g.db
+}
+func (g *gormProvider) GetModelName() string {
+	return "users"
 }

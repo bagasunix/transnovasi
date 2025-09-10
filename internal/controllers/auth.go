@@ -41,21 +41,3 @@ func (ac *AuthController) LoginUser(ctx *fiber.Ctx) error {
 
 	return ctx.Status(result.Code).JSON(result)
 }
-
-func (ac *AuthController) LoginCustomer(ctx *fiber.Ctx) error {
-	req := new(requests.Login)
-	var result responses.BaseResponse[*responses.ResponseLogin]
-	if err := ctx.BodyParser(req); err != nil {
-		result.Code = fiber.StatusBadRequest
-		result.Message = "Invalid request"
-		result.Errors = err.Error()
-		return ctx.Status(fiber.StatusBadRequest).JSON(result)
-	}
-
-	result = ac.usecase.LoginCustomer(ctx.Context(), req)
-	if result.Errors != "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(result)
-	}
-
-	return ctx.Status(result.Code).JSON(result)
-}

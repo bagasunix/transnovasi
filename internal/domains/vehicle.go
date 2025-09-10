@@ -9,7 +9,9 @@ type Vehicle struct {
 	Model      string // model/tipe kendaraan
 	Brand      string // merk
 	Color      string
-	Year       int
+	Year       int    `gorm:"not null"`
+	MaxSpeed   int    `gorm:"not null"`
+	FuelType   string // GASOLINE, DIESEL, ELECTRIC, HYBRID
 	IsActive   int
 
 	CreatedBy int        `gorm:"column:created_by"`

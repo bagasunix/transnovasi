@@ -7,6 +7,5 @@ import (
 )
 
 func MakeAuthHandler(controller *controllers.AuthController, router fiber.Router) {
-	router.Post("/customer", controller.LoginCustomer)
-	router.Post("/user", controller.LoginUser)
+	router.Post("", controller.LoginUser)
 }
