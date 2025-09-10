@@ -35,7 +35,7 @@ type CustomerUsecase interface {
 	Create(ctx context.Context, request *requests.CreateCustomer) (response responses.BaseResponse[responses.CustomerResponse])
 	ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse])
 	ViewCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[*responses.CustomerResponse])
-	// UpdateCustomer(ctx *fiber.Ctx, req *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse])
+	UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse])
 }
 
 func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories, redis *redis.Client) CustomerUsecase {
@@ -100,7 +100,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.CreateCustom
 
 	if err = c.repo.GetCustomer().CreateTx(ctx, tx, customerBuild); err != nil {
 		response.Code = fiber.StatusConflict
-		response.Message = "Gagal membuat pengguna"
+		response.Message = "Gagal membuat pelanggan"
 		response.Errors = err.Error()
 		return response
 	}
@@ -160,7 +160,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.CreateCustom
 			tx.Rollback()
 			return responses.BaseResponse[responses.CustomerResponse]{
 				Code:    fiber.StatusConflict,
-				Message: "Gagal membuat pengguna",
+				Message: "Gagal membuat pelanggan",
 				Errors:  err.Error(),
 			}
 		}
@@ -168,7 +168,7 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.CreateCustom
 
 	if err = tx.Commit().Error; err != nil {
 		response.Code = fiber.StatusConflict
-		response.Message = "Gagal membuat pengguna"
+		response.Message = "Gagal membuat pelanggan"
 		response.Errors = err.Error()
 		return response
 	}
@@ -244,7 +244,7 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 				TotalItem: totalItems,
 				TotalPage: totalPages,
 			}
-			response.Message = "Inquiry pengguna berhasil"
+			response.Message = "Inquiry pelanggan berhasil"
 			response.Code = fiber.StatusOK
 			return response
 		}
@@ -293,7 +293,7 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 		TotalItem: totalItems,
 		TotalPage: totalPages,
 	}
-	response.Message = "Inquiry pengguna berhasil"
+	response.Message = "Inquiry pelanggan berhasil"
 	response.Code = fiber.StatusOK
 	return response
 }
@@ -316,7 +316,7 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 		// Cache hit, unmarshal JSON
 		if err := json.Unmarshal([]byte(val), &resCust); err == nil {
 			response.Data = &resCust
-			response.Message = "Pengguna ditemukan"
+			response.Message = "Pelanggan ditemukan"
 			response.Code = fiber.StatusOK
 			return response
 		}
@@ -325,7 +325,7 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 	checkCustomer := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"id": paramID})
 	if checkCustomer.Error != nil {
 		response.Code = fiber.StatusNotFound
-		response.Message = "Pengguna tidak ditemukan"
+		response.Message = "Pelanggan tidak ditemukan"
 		response.Errors = checkCustomer.Error.Error()
 		return response
 	}
@@ -358,26 +358,78 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 	c.redis.Set(ctx, cacheKey, data, 5*time.Minute)
 
 	response.Data = &resCust
-	response.Message = "Pengguna ditemukan"
+	response.Message = "Pelanggan ditemukan"
 	response.Code = fiber.StatusOK
 
 	return response
 }
+func (c *custUsecase) UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse]) {
+	if err := request.Validate(); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Validasi error"
+		response.Errors = request.Validate().Error()
+		return response
+	}
 
-// func (c *custUsecase) UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse]) {
-// 	if request.Validate() != nil {
-// 		response.Code = fiber.StatusBadRequest
-// 		response.Message = "Validasi error"
-// 		response.Errors = request.Validate().Error()
-// 		return response
-// 	}
+	checkCust := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"id": request.ID})
+	if checkCust.Error != nil {
+		response.Code = fiber.StatusConflict
+		response.Message = "Pelanggan tidak ditemukan"
+		response.Errors = checkCust.Error.Error()
+		return response
+	}
 
-// 	checkName := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"email": request.Email})
-// 	if len(checkName.Value.Email) != 0 {
-// 		response.Code = fiber.StatusConflict
-// 		response.Message = "Email sudah terdaftar"
-// 		response.Errors = errors.ErrDataAlready(request.Email).Error()
-// 		return response
-// 	}
-// 	return response
-// }
+	mCustt := new(domains.Customer)
+	mCustt.Name = request.Name
+	mCustt.Phone = request.Phone
+	mCustt.Address = request.Address
+
+	// --- Redis key berdasarkan customer ID
+	intCustID, _ := strconv.Atoi(request.ID)
+	cacheKey := fmt.Sprintf("customers:%d", intCustID)
+
+	if err := c.repo.GetCustomer().Updates(ctx, intCustID, mCustt); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Gagal memperbarui pelanggan"
+		response.Errors = err.Error()
+		return response
+	}
+
+	resCust := new(responses.CustomerResponse)
+	resCust.ID = strconv.Itoa(mCustt.ID)
+	resCust.Name = mCustt.Name
+	resCust.Email = mCustt.Email
+	resCust.Phone = mCustt.Phone
+	resCust.Address = mCustt.Address
+	resCust.IsActive = strconv.Itoa(mCustt.IsActive)
+
+	if len(checkCust.Value.Vehicles) != 0 {
+		resCust.Vehicle = make([]responses.VehicleResponse, 0, len(checkCust.Value.Vehicles))
+		for _, v := range checkCust.Value.Vehicles {
+			resCust.Vehicle = append(resCust.Vehicle, responses.VehicleResponse{
+				Brand:    v.Brand,
+				Color:    v.Color,
+				FuelType: v.FuelType,
+				MaxSpeed: v.MaxSpeed,
+				Model:    v.Model,
+				PlateNo:  v.PlateNo,
+				Year:     v.Year,
+				IsActive: v.IsActive,
+			})
+		}
+	}
+
+	// Hapus cache detail
+	c.redis.Del(ctx, cacheKey)
+
+	// 4. Hapus cache list (opsional)
+	listKeys, _ := c.redis.Keys(ctx, "customers:search=*").Result()
+	if len(listKeys) > 0 {
+		c.redis.Del(ctx, listKeys...)
+	}
+
+	response.Data = &resCust
+	response.Code = fiber.StatusOK
+	response.Message = "Berhsail memperbarui pelanggan"
+	return response
+}
