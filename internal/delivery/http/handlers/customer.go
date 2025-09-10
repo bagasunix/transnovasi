@@ -11,4 +11,5 @@ func MakeCustHandler(controller *controllers.CustomerController, router fiber.Ro
 	router.Get("", authMiddleware, controller.GetAllCustomer)
 	router.Get("/:id", authMiddleware, controller.ViewCustomer)
 	router.Put("/:id", authMiddleware, controller.UpdateCustomer)
+	router.Delete("/:id", authMiddleware, controller.DeleteCustomer)
 }

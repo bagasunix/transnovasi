@@ -30,7 +30,7 @@ func (g *gormProvider) CreateTx(ctx context.Context, tx any, m *domains.Customer
 	return errors.ErrDuplicateValue(g.logger, g.GetModelName(), tx.(*gorm.DB).WithContext(ctx).Create(m).Error)
 }
 func (g *gormProvider) Delete(ctx context.Context, id int) error {
-	return errors.ErrSomethingWrong(g.logger, g.db.WithContext(ctx).Where("id = ?", id).Updates(map[string]interface{}{"is_active": 0, "deleted_at": time.Now()}).Error)
+	return errors.ErrSomethingWrong(g.logger, g.db.Model(&domains.Customer{}).WithContext(ctx).Where("id = ?", id).Updates(map[string]interface{}{"is_active": 0, "deleted_at": time.Now()}).Error)
 }
 func (g *gormProvider) Updates(ctx context.Context, id int, m *domains.Customer) error {
 	return errors.ErrDuplicateValue(g.logger, g.GetModelName(), g.db.WithContext(ctx).Where("id = ?", id).Updates(m).Error)

@@ -35,6 +35,7 @@ type CustomerUsecase interface {
 	Create(ctx context.Context, request *requests.CreateCustomer) (response responses.BaseResponse[responses.CustomerResponse])
 	ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse])
 	ViewCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[*responses.CustomerResponse])
+	DeleteCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[any])
 	UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse])
 }
 
@@ -432,4 +433,44 @@ func (c *custUsecase) UpdateCustomer(ctx context.Context, request *requests.Upda
 	response.Code = fiber.StatusOK
 	response.Message = "Berhsail memperbarui pelanggan"
 	return response
+}
+
+func (c *custUsecase) DeleteCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[any]) {
+	if err := request.Validate(); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Validasi error"
+		response.Errors = request.Validate().Error()
+		return response
+	}
+
+	intId, _ := strconv.Atoi(request.Id.(string))
+	result := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"id": intId})
+	if result.Error != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Data tidak ditemukan"
+		response.Errors = result.Error.Error()
+		return response
+	}
+
+	if err := c.repo.GetCustomer().Delete(ctx, intId); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Data gagal dihapus"
+		response.Errors = err.Error()
+		return response
+	}
+
+	// 3. Hapus cache Redis
+	cacheKey := fmt.Sprintf("customers:%d", intId)
+	c.redis.Del(ctx, cacheKey) // Hapus cache detail
+
+	// Hapus cache list (opsional, pattern search)
+	listKeys, _ := c.redis.Keys(ctx, "customers:search=*").Result()
+	if len(listKeys) > 0 {
+		c.redis.Del(ctx, listKeys...)
+	}
+
+	response.Message = "Data berhasil dihapus"
+	response.Code = fiber.StatusOK
+	return response
+
 }

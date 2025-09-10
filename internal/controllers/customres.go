@@ -103,3 +103,23 @@ func (c *CustomerController) UpdateCustomer(ctx *fiber.Ctx) error {
 
 	return ctx.Status(response.Code).JSON(response)
 }
+func (c *CustomerController) DeleteCustomer(ctx *fiber.Ctx) error {
+	request := new(requests.EntityId)
+	var response responses.BaseResponse[any]
+
+	id := ctx.Params("id")
+	if id == "" {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID tidak ditemukan"
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	request.Id = id
+	response = c.usecase.DeleteCustomer(ctx.Context(), request)
+	if response.Errors != "" {
+		return ctx.Status(response.Code).JSON(response)
+	}
+
+	return ctx.Status(response.Code).JSON(response)
+}
