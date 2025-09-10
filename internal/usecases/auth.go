@@ -69,7 +69,7 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 	if !hash.ComparePasswords(checkUser.Value.Password, []byte(request.Password)) {
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = fmt.Sprint("email atau password salah, silahkan coba lagi")
+		resonse.Errors = "email atau password salah, silahkan coba lagi"
 		return resonse
 	}
 
@@ -83,7 +83,7 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 
 	clm := new(jwt.Claims)
 	clm.User = &userBuild
-	clm.ExpiresAt = time.Now().Add(1 * time.Hour).Unix()
+	clm.ExpiresAt = time.Now().Add(24 * time.Hour).Unix()
 
 	token, err := jwt.GenerateToken(au.cfg.Server.Token.JWTKey, *clm)
 	if err != nil {
@@ -93,8 +93,8 @@ func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (
 		return resonse
 	}
 
-	redisKey := "authUser:token:" + strconv.Itoa(int(userBuild.ID))
-	err = au.redis.Set(ctx, redisKey, token, time.Hour).Err()
+	redisKey := "auth_user:token:" + strconv.Itoa(int(userBuild.ID))
+	err = au.redis.Set(ctx, redisKey, token, 24*time.Hour).Err()
 	if err != nil {
 		resonse.Code = fiber.StatusConflict
 		resonse.Message = "email atau password salah, silahkan coba lagi"
@@ -143,7 +143,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		resonse.Code = fiber.StatusNotFound
 		resonse.Message = "username and password salah"
 		resonse.Message = "email atau password salah, silahkan coba lagi"
-		resonse.Errors = fmt.Sprint("email atau password salah, silahkan coba lagi")
+		resonse.Errors = "email atau password salah, silahkan coba lagi"
 		return resonse
 	}
 
@@ -158,7 +158,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 
 	clm := new(jwt.Claims)
 	clm.Customer = &custBuild
-	clm.ExpiresAt = time.Now().Add(1 * time.Hour).Unix()
+	clm.ExpiresAt = time.Now().Add(24 * time.Hour).Unix()
 
 	token, err := jwt.GenerateToken(au.cfg.Server.Token.JWTKey, *clm)
 	if err != nil {
@@ -169,7 +169,7 @@ func (au *authUsecase) LoginCustomer(ctx context.Context, request *requests.Logi
 		return resonse
 	}
 
-	redisKey := "authCust:token:" + strconv.Itoa(int(custBuild.ID))
+	redisKey := "auth_customer:token:" + strconv.Itoa(int(custBuild.ID))
 	err = au.redis.Set(ctx, redisKey, token, 24*time.Hour).Err()
 	if err != nil {
 		resonse.Code = fiber.StatusConflict
