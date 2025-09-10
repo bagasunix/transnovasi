@@ -1,8 +1,10 @@
 package usecases
 
 import (
+	"context"
 	errs "errors"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/phuslu/log"
@@ -25,7 +27,7 @@ type custUsecase struct {
 }
 
 type CustomerUsecase interface {
-	Create(ctx *fiber.Ctx, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse])
+	Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse])
 }
 
 func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories) CustomerUsecase {
@@ -37,7 +39,7 @@ func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo reposito
 	return n
 }
 
-func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse]) {
+func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse]) {
 	if request.Validate() != nil {
 		response.Code = fiber.StatusBadRequest
 		response.Message = "email atau password salah, silahkan coba lagi"
@@ -45,14 +47,14 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 		return response
 	}
 
-	checkEmail := c.repo.GetCustomer().GetOneByParams(ctx.Context(), map[string]interface{}{"email": request.Email})
+	checkEmail := c.repo.GetCustomer().GetOneByParams(ctx, map[string]interface{}{"email": request.Email})
 	if checkEmail.Value.Email == request.Email {
 		response.Code = fiber.StatusConflict
 		response.Message = "Email sudah terdaftar"
 		response.Errors = "email " + errors.ERR_ALREADY_EXISTS
 		return response
 	}
-	if checkEmail.Error != nil && !errs.Is(checkEmail.Error, gorm.ErrRecordNotFound) {
+	if checkEmail.Error != nil && !strings.Contains(checkEmail.Error.Error(), "not found") {
 		response.Code = fiber.StatusConflict
 		response.Message = "Validasi email invalid"
 		response.Errors = checkEmail.Error.Error()
@@ -89,7 +91,7 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 			}
 			platSet[v.PlateNo] = struct{}{}
 
-			checkPlat := c.repo.GetVehicle().GetOneByParams(ctx.Context(), map[string]interface{}{"plat_no": v.PlateNo})
+			checkPlat := c.repo.GetVehicle().GetOneByParams(ctx, map[string]interface{}{"plat_no": v.PlateNo})
 			if checkPlat.Value.PlateNo == v.PlateNo {
 				response.Code = fiber.StatusConflict
 				response.Message = "Kendaraan sudah terdaftar"
@@ -132,7 +134,7 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 		}
 	}()
 
-	if err = c.repo.GetCustomer().CreateTx(ctx.Context(), tx, customerBuild); err != nil {
+	if err = c.repo.GetCustomer().CreateTx(ctx, tx, customerBuild); err != nil {
 		response.Code = fiber.StatusConflict
 		response.Message = "Gagal membuat pengguna"
 		response.Errors = err.Error()
@@ -140,7 +142,7 @@ func (c *custUsecase) Create(ctx *fiber.Ctx, request *requests.Customer) (respon
 	}
 
 	if len(vehicles) != 0 {
-		if err := c.repo.GetVehicle().CreateBulkTx(ctx.Context(), tx, vehicles); err != nil {
+		if err := c.repo.GetVehicle().CreateBulkTx(ctx, tx, vehicles); err != nil {
 			tx.Rollback()
 			return responses.BaseResponse[responses.CustomerResponse]{
 				Code:    fiber.StatusConflict,

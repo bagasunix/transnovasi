@@ -17,18 +17,13 @@ func LoggingMiddleware(c *fiber.Ctx, log *log.Logger, r repositories.Repositorie
 	start := time.Now()
 
 	var userID string = "0"
-	var CustomerID string = "0"
 
 	if c.Locals("user") != nil {
 		userID = strconv.Itoa(int(c.Locals("user").(*jwt.Claims).User.ID))
 	}
-	if c.Locals("customer") != nil {
-		CustomerID = strconv.Itoa(int(c.Locals("customer").(*jwt.Claims).Customer.ID))
-	}
 	// Simpan log ke database
 	logEntry := domains.AuditLog{
 		UserID:     userID,
-		CustomerID: CustomerID,
 		Method:     c.Method(),
 		Endpoint:   c.OriginalURL(),
 		StatusCode: statusCOde,

@@ -34,15 +34,10 @@ func LoggingMiddleware(logger *log.Logger, r repositories.Repositories) fiber.Ha
 		if c.Locals("user") != nil {
 			userID = strconv.Itoa(int(c.Locals("user").(*jwt.Claims).User.ID))
 		}
-		customerID := "0"
-		if c.Locals("customer") != nil {
-			customerID = strconv.Itoa(int(c.Locals("customer").(*jwt.Claims).Customer.ID))
-		}
 
 		// simpan ke database
 		logEntry := domains.AuditLog{
 			UserID:     userID,
-			CustomerID: customerID,
 			Method:     c.Method(),
 			Endpoint:   c.OriginalURL(),
 			StatusCode: statusCode,

@@ -17,18 +17,18 @@ func NewAuthMiddleware(redisClient *redis.Client, log *log.Logger, cfg *env.Cfg)
 	return func(ctx *fiber.Ctx) error {
 		authHeader := ctx.Get("Authorization")
 		if authHeader == "" {
-			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing authorization header"})
+			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Anda belum login", "error": "missing authorization header"})
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == authHeader {
-			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid authorization header format"})
+			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Anda belum login", "error": "invalid authorization header format"})
 		}
 
 		// Gunakan ValidateToken untuk memvalidasi JWT
 		claims, err := jwt.ValidateToken(log, tokenString, cfg)
 		if err != nil {
-			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Anda belum login", "error": err.Error()})
 		}
 
 		var redisKey string = "0"
@@ -37,13 +37,13 @@ func NewAuthMiddleware(redisClient *redis.Client, log *log.Logger, cfg *env.Cfg)
 		// Periksa apakah token ada di Redis
 		exists, err := redisClient.Exists(ctx.Context(), redisKey).Result()
 		if err != nil || exists == 0 {
-			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "session expired, please login again"})
+			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Anda belum login", "error": "session expired, please login again"})
 		}
 
 		// Cek sisa waktu expired token di Redis
 		ttl, err := redisClient.TTL(ctx.Context(), tokenString).Result()
 		if err != nil {
-			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "error checking session"})
+			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Anda belum login", "error": "error checking session"})
 		}
 
 		// Perpanjang masa aktif token jika kurang dari 1 menit sebelum kedaluwarsa

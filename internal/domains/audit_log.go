@@ -5,7 +5,6 @@ import "time"
 type AuditLog struct {
 	ID         int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID     string    `json:"user_id" gorm:"column:user_id"`
-	CustomerID string    `json:"customer_id" gorm:"column:customer_id"`
 	Method     string    `json:"method" gorm:"type:varchar(50);not null"`
 	Endpoint   string    `json:"url" gorm:"column:url;not null"`
 	StatusCode string    `json:"status_code" gorm:"column:status_code"`

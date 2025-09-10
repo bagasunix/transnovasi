@@ -3,7 +3,6 @@
 CREATE TABLE audit_logs (
     id SERIAL PRIMARY KEY,
     user_id SERIAL,
-    customer_id SERIAL,
     method VARCHAR(50) NOT NULL,
     url TEXT NOT NULL,
     status_code VARCHAR(10),
