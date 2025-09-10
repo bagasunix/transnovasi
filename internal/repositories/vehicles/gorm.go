@@ -43,8 +43,23 @@ func (g *gormProvider) GetOneByParams(ctx context.Context, params map[string]int
 	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), g.db.WithContext(ctx).Where(params).First(&result.Value).Error)
 	return result
 }
-func (g *gormProvider) GetAll(ctx context.Context, limit int, offset int, search string) (result domains.SliceResult[domains.Vehicle]) {
-	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), g.db.WithContext(ctx).Limit(int(limit)).Find(&result.Value).Error)
+func (g *gormProvider) GetAll(ctx context.Context, limit, offset int, search string) (result domains.SliceResult[domains.Vehicle]) {
+	query := g.db.WithContext(ctx).Limit(limit).Offset(offset)
+	if search != "" {
+		query = query.Where("name LIKE ? OR email LIKE ?", "%"+search+"%", "%"+search+"%")
+	}
+	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), query.Find(&result.Value).Error)
+	return result
+}
+func (g *gormProvider) GetAllByCustomerID(ctx context.Context, customerID, limit, offset int, search string) (result domains.SliceResult[domains.Vehicle]) {
+	query := g.db.WithContext(ctx).Limit(limit).Offset(offset)
+	if search != "" {
+		query = query.Where("brand LIKE ? OR model LIKE ? OR plate_no LIKE ? OR year LIKE ?", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%")
+	}
+	if customerID != 0 {
+		query = query.Where("customer_id = ?", customerID)
+	}
+	result.Error = errors.ErrRecordNotFound(g.logger, g.GetModelName(), query.Find(&result.Value).Error)
 	return result
 }
 func (g *gormProvider) GetConnection() (T any) {
@@ -52,4 +67,16 @@ func (g *gormProvider) GetConnection() (T any) {
 }
 func (g *gormProvider) GetModelName() string {
 	return "vehicles"
+}
+func (g *gormProvider) CountVehicle(ctx context.Context, search string) (int, error) {
+	var count int64
+	query := g.db.WithContext(ctx).Model(&domains.Vehicle{})
+	if search != "" {
+		query = query.Where("brand LIKE ? OR model LIKE ? OR plate_no LIKE ? OR year LIKE ?", "%"+search+"%", "%"+search+"%", "%"+search+"%", "%"+search+"%")
+	}
+	err := query.Count(&count).Error
+	if err != nil {
+		return 0, errors.ErrSomethingWrong(g.logger, err)
+	}
+	return int(count), nil
 }

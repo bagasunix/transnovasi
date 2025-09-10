@@ -13,7 +13,7 @@ type CreateCustomer struct {
 	Phone   string `json:"phone"`
 	Address string `json:"address"`
 
-	Vehicle []Vehicle `json:"vehicle,omitempty"`
+	Vehicle []CreateVehicle `json:"vehicle,omitempty"`
 }
 
 func (c CreateCustomer) Validate() error {

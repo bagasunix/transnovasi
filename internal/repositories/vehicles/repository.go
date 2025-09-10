@@ -12,7 +12,9 @@ type Common interface {
 	CreateBulkTx(ctx context.Context, tx any, m []domains.Vehicle) error
 	Delete(ctx context.Context, id int) error
 	Updates(ctx context.Context, id int, m *domains.Vehicle) error
-	GetAll(ctx context.Context, limit int, offset int, search string) (result domains.SliceResult[domains.Vehicle])
+	GetAll(ctx context.Context, limit, offset int, search string) (result domains.SliceResult[domains.Vehicle])
+	GetAllByCustomerID(ctx context.Context, customerID, limit, offset int, search string) (result domains.SliceResult[domains.Vehicle])
+	CountVehicle(ctx context.Context, search string) (int, error)
 
 	GetOneById(ctx context.Context, id int) (result domains.SingleResult[*domains.Vehicle])
 	GetOneByParams(ctx context.Context, params map[string]interface{}) (result domains.SingleResult[*domains.Vehicle])

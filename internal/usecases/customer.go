@@ -249,7 +249,7 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 		// Cache hit, unmarshal langsung
 		if err := json.Unmarshal([]byte(val), &custResponse); err == nil {
 			// Hit, kembalikan response dengan paging
-			totalItems, _ := c.redis.Get(ctx, "customers:count:"+request.Search).Int() // optional cache count
+			totalItems, _ := c.redis.Get(ctx, "customers:count:search="+request.Search).Int() // optional cache count
 			totalPages := (totalItems + limit - 1) / limit
 			response.Data = &custResponse
 			response.Paging = &responses.PageMetadata{
@@ -298,7 +298,7 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 	// Simpan ke Redis
 	data, _ := json.Marshal(custResponse)
 	c.redis.Set(ctx, cacheKey, data, 5*time.Minute)
-	c.redis.Set(ctx, "customers:count:"+request.Search, totalItems, 5*time.Minute)
+	c.redis.Set(ctx, "customers:count:search="+request.Search, totalItems, 5*time.Minute)
 
 	response.Data = &custResponse
 	response.Paging = &responses.PageMetadata{

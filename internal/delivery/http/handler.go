@@ -12,12 +12,13 @@ import (
 )
 
 type RouteConfig struct {
-	App            *fiber.App
-	AuthController *controllers.AuthController
-	CustController *controllers.CustomerController
-	Cfg            *env.Cfg
-	Redis          *redis.Client
-	Logger         *log.Logger
+	App               *fiber.App
+	AuthController    *controllers.AuthController
+	CustController    *controllers.CustomerController
+	VehicleController *controllers.VehicleController
+	Cfg               *env.Cfg
+	Redis             *redis.Client
+	Logger            *log.Logger
 }
 
 func InitHttpHandler(f *RouteConfig) *fiber.App {
@@ -30,5 +31,6 @@ func NewHttpHandler(r RouteConfig) *fiber.App {
 	// Handlers
 	handlers.MakeAuthHandler(r.AuthController, r.App.Group(r.Cfg.Server.Version+"/auth").(*fiber.Group))
 	handlers.MakeCustHandler(r.CustController, r.App.Group(r.Cfg.Server.Version+"/customer").(*fiber.Group), authMiddleware)
+	handlers.MakeVehicleHandler(r.VehicleController, r.App.Group(r.Cfg.Server.Version+"/vehicle").(*fiber.Group), authMiddleware)
 	return r.App
 }

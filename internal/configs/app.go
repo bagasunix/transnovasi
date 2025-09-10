@@ -31,15 +31,18 @@ func SetupApp(app *setupApp) *http.RouteConfig {
 	// setup use cases
 	authUsecase := usecases.NewAuthUsecase(app.Log, app.DB, app.Cfg, repositories, app.Redis)
 	customerUsecase := usecases.NewCustUsecase(app.Log, app.DB, app.Cfg, repositories, app.Redis)
+	vehicleUsecase := usecases.NewVehicleUsecase(app.Log, app.DB, app.Cfg, repositories, app.Redis)
 	// setup controller
 	authContoller := controllers.NewAuthController(app.Log, repositories, authUsecase)
 	customerContoller := controllers.NewCustomerController(app.Log, repositories, customerUsecase)
+	vehicleContoller := controllers.NewVehicleController(app.Log, repositories, vehicleUsecase)
 
 	return &http.RouteConfig{
-		App:            app.App,
-		AuthController: authContoller,
-		CustController: customerContoller,
-		Cfg:            app.Cfg,
-		Redis:          app.Redis,
+		App:               app.App,
+		AuthController:    authContoller,
+		CustController:    customerContoller,
+		VehicleController: vehicleContoller,
+		Cfg:               app.Cfg,
+		Redis:             app.Redis,
 	}
 }
