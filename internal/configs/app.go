@@ -30,7 +30,7 @@ func SetupApp(app *setupApp) *http.RouteConfig {
 	app.App.Use(middlewares.LoggingMiddleware(app.Log, repositories))
 	// setup use cases
 	authUsecase := usecases.NewAuthUsecase(app.Log, app.DB, app.Cfg, repositories, app.Redis)
-	customerUsecase := usecases.NewCustUsecase(app.Log, app.DB, app.Cfg, repositories)
+	customerUsecase := usecases.NewCustUsecase(app.Log, app.DB, app.Cfg, repositories, app.Redis)
 	// setup controller
 	authContoller := controllers.NewAuthController(app.Log, repositories, authUsecase)
 	customerContoller := controllers.NewCustomerController(app.Log, repositories, customerUsecase)

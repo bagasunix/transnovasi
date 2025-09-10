@@ -2,9 +2,13 @@ package usecases
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/phuslu/log"
 	"gorm.io/gorm"
@@ -24,24 +28,27 @@ type custUsecase struct {
 	cfg    *env.Cfg
 	repo   repositories.Repositories
 	logger *log.Logger
+	redis  *redis.Client
 }
 
 type CustomerUsecase interface {
-	Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse])
+	Create(ctx context.Context, request *requests.CreateCustomer) (response responses.BaseResponse[responses.CustomerResponse])
 	ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse])
 	ViewCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[*responses.CustomerResponse])
+	// UpdateCustomer(ctx *fiber.Ctx, req *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse])
 }
 
-func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories) CustomerUsecase {
+func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories, redis *redis.Client) CustomerUsecase {
 	n := new(custUsecase)
 	n.cfg = cfg
 	n.db = db
 	n.logger = logger
 	n.repo = repo
+	n.redis = redis
 	return n
 }
 
-func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (response responses.BaseResponse[responses.CustomerResponse]) {
+func (c *custUsecase) Create(ctx context.Context, request *requests.CreateCustomer) (response responses.BaseResponse[responses.CustomerResponse]) {
 	authUser := middlewares.GetAuthClaimsFromContext(ctx)
 	if request.Validate() != nil {
 		response.Code = fiber.StatusBadRequest
@@ -166,6 +173,13 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 		return response
 	}
 
+	// Hapus cache Redis
+	// hapus semua key yang dimulai dengan "customers:"
+	keys, _ := c.redis.Keys(ctx, "customers:*").Result()
+	if len(keys) > 0 {
+		c.redis.Del(ctx, keys...)
+	}
+
 	// Build response
 	resBuild := &responses.CustomerResponse{
 		ID:       strconv.Itoa(customerBuild.ID),
@@ -198,7 +212,6 @@ func (c *custUsecase) Create(ctx context.Context, request *requests.Customer) (r
 	response.Data = resBuild
 	return response
 }
-
 func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRequest) (response responses.BaseResponse[[]responses.CustomerResponse]) {
 	if err := request.Validate(); err != nil {
 		response.Code = 400
@@ -211,6 +224,33 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 
 	offset, limit := helpers.CalculateOffsetAndLimit(intPage, intLimit)
 
+	// --- Redis key berdasarkan search, page, limit
+	cacheKey := fmt.Sprintf("customers:search=%s:page=%d:limit=%d", request.Search, intPage, intLimit)
+
+	var custResponse []responses.CustomerResponse
+
+	// Cek Redis
+	val, err := c.redis.Get(ctx, cacheKey).Result()
+	if err == nil {
+		// Cache hit, unmarshal langsung
+		if err := json.Unmarshal([]byte(val), &custResponse); err == nil {
+			// Hit, kembalikan response dengan paging
+			totalItems, _ := c.redis.Get(ctx, "customers:count:"+request.Search).Int() // optional cache count
+			totalPages := (totalItems + limit - 1) / limit
+			response.Data = &custResponse
+			response.Paging = &responses.PageMetadata{
+				Page:      intPage,
+				Size:      limit,
+				TotalItem: totalItems,
+				TotalPage: totalPages,
+			}
+			response.Message = "Inquiry pengguna berhasil"
+			response.Code = fiber.StatusOK
+			return response
+		}
+	}
+
+	//  Ambil dari DB
 	resCust := c.repo.GetCustomer().GetAll(ctx, limit, offset, request.Search)
 	if resCust.Error != nil {
 		response.Code = 400
@@ -228,8 +268,8 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 	}
 	totalPages := (totalItems + limit - 1) / limit
 
-	custResponse := make([]responses.CustomerResponse, 0, len(resCust.Value))
-	// var custResponse []responses.CustomerResponse
+	// Map ke response
+	custResponse = make([]responses.CustomerResponse, 0, len(resCust.Value))
 	for _, v := range resCust.Value {
 		custResponse = append(custResponse, responses.CustomerResponse{
 			ID:       strconv.Itoa(v.ID),
@@ -240,6 +280,11 @@ func (c *custUsecase) ListCustomer(ctx context.Context, request *requests.BaseRe
 			IsActive: strconv.Itoa(v.IsActive),
 		})
 	}
+
+	// Simpan ke Redis
+	data, _ := json.Marshal(custResponse)
+	c.redis.Set(ctx, cacheKey, data, 5*time.Minute)
+	c.redis.Set(ctx, "customers:count:"+request.Search, totalItems, 5*time.Minute)
 
 	response.Data = &custResponse
 	response.Paging = &responses.PageMetadata{
@@ -259,7 +304,24 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 		response.Errors = err.Error()
 		return response
 	}
+
 	paramID, _ := strconv.Atoi(request.Id.(string))
+	// --- Redis key berdasarkan customer ID
+	cacheKey := fmt.Sprintf("customers:%d", paramID)
+
+	//  Cek Redis dulu
+	resCust := new(responses.CustomerResponse)
+	val, err := c.redis.Get(ctx, cacheKey).Result()
+	if err == nil {
+		// Cache hit, unmarshal JSON
+		if err := json.Unmarshal([]byte(val), &resCust); err == nil {
+			response.Data = &resCust
+			response.Message = "Pengguna ditemukan"
+			response.Code = fiber.StatusOK
+			return response
+		}
+	}
+
 	checkCustomer := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"id": paramID})
 	if checkCustomer.Error != nil {
 		response.Code = fiber.StatusNotFound
@@ -268,7 +330,6 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 		return response
 	}
 
-	resCust := new(responses.CustomerResponse)
 	resCust.ID = strconv.Itoa(checkCustomer.Value.ID)
 	resCust.Name = checkCustomer.Value.Name
 	resCust.Email = checkCustomer.Value.Email
@@ -276,9 +337,47 @@ func (c *custUsecase) ViewCustomer(ctx context.Context, request *requests.Entity
 	resCust.Address = checkCustomer.Value.Address
 	resCust.IsActive = strconv.Itoa(checkCustomer.Value.IsActive)
 
+	if len(checkCustomer.Value.Vehicles) != 0 {
+		resCust.Vehicle = make([]responses.VehicleResponse, 0, len(checkCustomer.Value.Vehicles))
+		for _, v := range checkCustomer.Value.Vehicles {
+			resCust.Vehicle = append(resCust.Vehicle, responses.VehicleResponse{
+				Brand:    v.Brand,
+				Color:    v.Color,
+				FuelType: v.FuelType,
+				MaxSpeed: v.MaxSpeed,
+				Model:    v.Model,
+				PlateNo:  v.PlateNo,
+				Year:     v.Year,
+				IsActive: v.IsActive,
+			})
+		}
+	}
+
+	// Simpan ke Redis dengan expire 5 menit
+	data, _ := json.Marshal(resCust)
+	c.redis.Set(ctx, cacheKey, data, 5*time.Minute)
+
 	response.Data = &resCust
 	response.Message = "Pengguna ditemukan"
 	response.Code = fiber.StatusOK
 
 	return response
 }
+
+// func (c *custUsecase) UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse]) {
+// 	if request.Validate() != nil {
+// 		response.Code = fiber.StatusBadRequest
+// 		response.Message = "Validasi error"
+// 		response.Errors = request.Validate().Error()
+// 		return response
+// 	}
+
+// 	checkName := c.repo.GetCustomer().GetOneByParams(ctx, map[string]any{"email": request.Email})
+// 	if len(checkName.Value.Email) != 0 {
+// 		response.Code = fiber.StatusConflict
+// 		response.Message = "Email sudah terdaftar"
+// 		response.Errors = errors.ErrDataAlready(request.Email).Error()
+// 		return response
+// 	}
+// 	return response
+// }

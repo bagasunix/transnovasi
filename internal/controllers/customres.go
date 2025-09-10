@@ -25,7 +25,7 @@ func NewCustomerController(logger *log.Logger, repo repositories.Repositories, u
 }
 
 func (ac *CustomerController) Create(ctx *fiber.Ctx) error {
-	request := new(requests.Customer)
+	request := new(requests.CreateCustomer)
 	var response responses.BaseResponse[responses.CustomerResponse]
 	if err := ctx.BodyParser(request); err != nil {
 		response.Code = fiber.StatusBadRequest
