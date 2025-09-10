@@ -31,15 +31,8 @@ func NewAuthMiddleware(redisClient *redis.Client, log *log.Logger, cfg *env.Cfg)
 			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
 		}
 
-		var redisKey string
-		if claims.User.ID != 0 {
-			redisKey = "auth_user:token:" + strconv.Itoa(int(claims.User.ID))
-			// Simpan claims ke context jika diperlukan untuk endpoint lain
-			ctx.Locals("user", claims)
-		} else {
-			redisKey = "auth_customer:token:" + strconv.Itoa(int(claims.Customer.ID))
-			ctx.Locals("customer", claims)
-		}
+		var redisKey string = "0"
+		redisKey = "auth_user:token:" + strconv.Itoa(int(claims.User.ID))
 
 		// Periksa apakah token ada di Redis
 		exists, err := redisClient.Exists(ctx.Context(), redisKey).Result()
@@ -57,6 +50,8 @@ func NewAuthMiddleware(redisClient *redis.Client, log *log.Logger, cfg *env.Cfg)
 		if ttl > 0 && ttl < time.Minute {
 			redisClient.Expire(ctx.Context(), tokenString, 15*time.Minute)
 		}
+
+		ctx.Locals("user", claims)
 
 		return ctx.Next()
 	}
