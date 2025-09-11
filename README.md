@@ -86,6 +86,7 @@ docker-compose up --build
 docker-compose up
 ```
 - App runs on: http://localhost:8080
+- Swagger docs: http://localhost:8080/swagger/index.html
 
 ### 4. Tech Stack
 ```bash
@@ -95,6 +96,7 @@ GORM
 Postgresql
 Redis
 phuslu/log
+Swagger UI
 ```
 
 ### 5. Add Sample Postman Curl
