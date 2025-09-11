@@ -1,0 +1,1505 @@
+{
+	"info": {
+		"_postman_id": "cc62443e-0051-4a94-b2e0-65638a0d76ea",
+		"name": "Transnovasi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25072281",
+		"_collection_link": "https://www.postman.com/tagihan-strbri/workspace/mypublic/collection/25072281-cc62443e-0051-4a94-b2e0-65638a0d76ea?action=share&source=collection_link&creator=25072281"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json(); // Mendapatkan data JSON dari response\r",
+									"if (jsonData.data.token != null) {\r",
+									"    pm.globals.set(\"auth_token\", jsonData.data.token);\r",
+									"    pm.environment.set(\"auth_token\", jsonData.data.token);\r",
+									"}\r",
+									"\r",
+									"// Menampilkan token di console\r",
+									"console.log(\"Token:\", jsonData.data.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"emailku1@gmail.com\",\r\n    \"password\": \"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Login Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"emailku1@gmail.com\",\r\n    \"password\": \"password123\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 11 Sep 2025 05:34:24 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "436"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Pengguna berhasil masuk\",\n    \"data\": {\n        \"id\": \"1\",\n        \"token\": \"eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMSIsIm5hbWUiOiJBbGRpbm8gUHJhdGFtYSBCYWdhc2thcmEiLCJzZXgiOiIxIiwiZW1haWwiOiJlbWFpbGt1MUBnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpc19hY3RpdmUiOiIxIiwiY3JlYXRlZF9hdCI6IjAwMDEtMDEtMDFUMDA6MDA6MDBaIn0sImV4cCI6MTc1NzY1NTI2NH0.H3vUXN7hiI0Z4hQ_JuWoFQKs1lh76SLM9gh4g_C4lQuOKj758lbZf3_H2YGFBPU0lf1vnhbRG37d0MXtntEV_w\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Aldino Pratama\",\r\n  \"sex\": 1,\r\n  \"email\": \"aldinopratama15@gmail.com\",\r\n  \"password\": \"password123\",\r\n  \"role_id\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Logout Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/logout",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"logout"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 11 Sep 2025 05:31:28 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "40"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Logout berhasil\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Customer",
+			"item": [
+				{
+					"name": "Create Customer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Perusahaan Transportasi Besar Kecil\",\r\n  \"email\": \"bigtransport@example.com\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Raya Pusat Kota No. 1000\",\r\n  \"vehicle\": [\r\n    {\r\n      \"plate_no\": \"B 1000 ABC\",\r\n      \"model\": \"Truck\",\r\n      \"brand\": \"Mitsubishi\",\r\n      \"color\": \"Biru\",\r\n      \"year\": \"2020\",\r\n      \"max_speed\": 120,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1001 DEF\",\r\n      \"model\": \"Van\",\r\n      \"brand\": \"Toyota\",\r\n      \"color\": \"Putih\",\r\n      \"year\": \"2021\",\r\n      \"max_speed\": 150,\r\n      \"fuel_type\": \"Bensin\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1002 GHI\",\r\n      \"model\": \"Pickup\",\r\n      \"brand\": \"Isuzu\",\r\n      \"color\": \"Hitam\",\r\n      \"year\": \"2019\",\r\n      \"max_speed\": 130,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1999 XYZ\",\r\n      \"model\": \"Sedan\",\r\n      \"brand\": \"Honda\",\r\n      \"color\": \"Silver\",\r\n      \"year\": \"2022\",\r\n      \"max_speed\": 180,\r\n      \"fuel_type\": \"Bensin\"\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/customer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customer"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create Customer Single",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Budi Santoso\",\r\n  \"email\": \"budi@example.com\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Merdeka No. 123, Jakarta\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 12:32:27 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "237"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Sukses mendaftar\",\n    \"data\": {\n        \"id\": 3,\n        \"name\": \"Budi Santoso\",\n        \"email\": \"budi@example.com\",\n        \"phone\": \"081234567890\",\n        \"Address\": \"Jl. Merdeka No. 123, Jakarta\",\n        \"is_active\": \"1\",\n        \"created_by\": 0,\n        \"created_at\": \"0001-01-01T00:00:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Create Customer With Vehicle (Plate Duplicate)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Perusahaan dengan Plat Ganda\",\r\n  \"email\": \"duplicateplates@example.com\",\r\n  \"phone\": \"081298765432\",\r\n  \"address\": \"Jl. Duplikat No. 123\",\r\n  \"vehicle\": [\r\n    {\r\n      \"plate_no\": \"B 1234 DUP\", // Plat duplikat\r\n      \"model\": \"Truck\",\r\n      \"brand\": \"Mitsubishi\",\r\n      \"color\": \"Biru\",\r\n      \"year\": \"2020\",\r\n      \"max_speed\": 120,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1234 DUP\", // Plat duplikat (sama dengan di atas)\r\n      \"model\": \"Van\",\r\n      \"brand\": \"Toyota\",\r\n      \"color\": \"Putih\",\r\n      \"year\": \"2021\",\r\n      \"max_speed\": 150,\r\n      \"fuel_type\": \"Bensin\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 5678 DUP\", // Plat duplikat lain\r\n      \"model\": \"Pickup\",\r\n      \"brand\": \"Isuzu\",\r\n      \"color\": \"Hitam\",\r\n      \"year\": \"2019\",\r\n      \"max_speed\": 130,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 5678 DUP\", // Plat duplikat (sama dengan di atas)\r\n      \"model\": \"Sedan\",\r\n      \"brand\": \"Honda\",\r\n      \"color\": \"Silver\",\r\n      \"year\": \"2022\",\r\n      \"max_speed\": 180,\r\n      \"fuel_type\": \"Bensin\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 9999 DUP\", // Plat terakhir\r\n      \"model\": \"SUV\",\r\n      \"brand\": \"Hyundai\",\r\n      \"color\": \"Merah\",\r\n      \"year\": \"2023\",\r\n      \"max_speed\": 190,\r\n      \"fuel_type\": \"Bensin\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 12:54:13 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "106"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 400,\n    \"message\": \"Nomor plat duplikat dalam request\",\n    \"errors\": \"Plat B 1234 DUP sudah ada di request\"\n}"
+						},
+						{
+							"name": "Create Customer With Vehicle",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Perusahaan Transportasi Besar\",\r\n  \"email\": \"bigtransport@example.com\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Raya Pusat Kota No. 1000\",\r\n  \"vehicle\": [\r\n    {\r\n      \"plate_no\": \"B 1000 ABC\",\r\n      \"model\": \"Truck\",\r\n      \"brand\": \"Mitsubishi\",\r\n      \"color\": \"Biru\",\r\n      \"year\": \"2020\",\r\n      \"max_speed\": 120,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1001 DEF\",\r\n      \"model\": \"Van\",\r\n      \"brand\": \"Toyota\",\r\n      \"color\": \"Putih\",\r\n      \"year\": \"2021\",\r\n      \"max_speed\": 150,\r\n      \"fuel_type\": \"Bensin\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1002 GHI\",\r\n      \"model\": \"Pickup\",\r\n      \"brand\": \"Isuzu\",\r\n      \"color\": \"Hitam\",\r\n      \"year\": \"2019\",\r\n      \"max_speed\": 130,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1999 XYZ\",\r\n      \"model\": \"Sedan\",\r\n      \"brand\": \"Honda\",\r\n      \"color\": \"Silver\",\r\n      \"year\": \"2022\",\r\n      \"max_speed\": 180,\r\n      \"fuel_type\": \"Bensin\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 13:11:32 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "861"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Sukses mendaftar\",\n    \"data\": {\n        \"id\": 9,\n        \"name\": \"Perusahaan Transportasi Besar\",\n        \"email\": \"bigtransport@example.com\",\n        \"phone\": \"081234567890\",\n        \"Address\": \"Jl. Raya Pusat Kota No. 1000\",\n        \"is_active\": \"1\",\n        \"created_by\": 0,\n        \"created_at\": \"0001-01-01T00:00:00Z\",\n        \"vehicle\": [\n            {\n                \"id\": \"17\",\n                \"plateNo\": \"B 1000 ABC\",\n                \"Model\": \"Truck\",\n                \"Brand\": \"Mitsubishi\",\n                \"Color\": \"Biru\",\n                \"Year\": 2020,\n                \"max_speed\": 120,\n                \"fuel_type\": \"Solar\",\n                \"is_active\": 0\n            },\n            {\n                \"id\": \"18\",\n                \"plateNo\": \"B 1001 DEF\",\n                \"Model\": \"Van\",\n                \"Brand\": \"Toyota\",\n                \"Color\": \"Putih\",\n                \"Year\": 2021,\n                \"max_speed\": 150,\n                \"fuel_type\": \"Bensin\",\n                \"is_active\": 0\n            },\n            {\n                \"id\": \"19\",\n                \"plateNo\": \"B 1002 GHI\",\n                \"Model\": \"Pickup\",\n                \"Brand\": \"Isuzu\",\n                \"Color\": \"Hitam\",\n                \"Year\": 2019,\n                \"max_speed\": 130,\n                \"fuel_type\": \"Solar\",\n                \"is_active\": 0\n            },\n            {\n                \"id\": \"20\",\n                \"plateNo\": \"B 1999 XYZ\",\n                \"Model\": \"Sedan\",\n                \"Brand\": \"Honda\",\n                \"Color\": \"Silver\",\n                \"Year\": 2022,\n                \"max_speed\": 180,\n                \"fuel_type\": \"Bensin\",\n                \"is_active\": 0\n            }\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "List Customer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/customer?page=1&limit=&search",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customer"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": ""
+								},
+								{
+									"key": "search",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "List Customer",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Perusahaan Transportasi Besar\",\r\n  \"email\": \"bigtransport@example.com\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Raya Pusat Kota No. 1000\",\r\n  \"vehicle\": [\r\n    {\r\n      \"plate_no\": \"B 1000 ABC\",\r\n      \"model\": \"Truck\",\r\n      \"brand\": \"Mitsubishi\",\r\n      \"color\": \"Biru\",\r\n      \"year\": \"2020\",\r\n      \"max_speed\": 120,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1001 DEF\",\r\n      \"model\": \"Van\",\r\n      \"brand\": \"Toyota\",\r\n      \"color\": \"Putih\",\r\n      \"year\": \"2021\",\r\n      \"max_speed\": 150,\r\n      \"fuel_type\": \"Bensin\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1002 GHI\",\r\n      \"model\": \"Pickup\",\r\n      \"brand\": \"Isuzu\",\r\n      \"color\": \"Hitam\",\r\n      \"year\": \"2019\",\r\n      \"max_speed\": 130,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1999 XYZ\",\r\n      \"model\": \"Sedan\",\r\n      \"brand\": \"Honda\",\r\n      \"color\": \"Silver\",\r\n      \"year\": \"2022\",\r\n      \"max_speed\": 180,\r\n      \"fuel_type\": \"Bensin\"\r\n    }\r\n  ]\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 13:47:51 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "333"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Inquiry pengguna berhasil\",\n    \"data\": [\n        {\n            \"id\": 9,\n            \"name\": \"Perusahaan Transportasi Besar\",\n            \"email\": \"bigtransport@example.com\",\n            \"phone\": \"081234567890\",\n            \"Address\": \"Jl. Raya Pusat Kota No. 1000\",\n            \"is_active\": \"1\",\n            \"created_by\": 0,\n            \"created_at\": \"0001-01-01T00:00:00Z\"\n        }\n    ],\n    \"paging\": {\n        \"page\": 0,\n        \"size\": 10,\n        \"total_item\": 1,\n        \"total_page\": 1\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "View Customer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/customer/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customer",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "51"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "View Customer Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "9"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 14:40:50 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "266"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Pengguna ditemukan\",\n    \"data\": {\n        \"id\": \"9\",\n        \"name\": \"Perusahaan Transportasi Besar\",\n        \"email\": \"bigtransport@example.com\",\n        \"phone\": \"081234567890\",\n        \"Address\": \"Jl. Raya Pusat Kota No. 1000\",\n        \"is_active\": \"1\",\n        \"created_by\": 0,\n        \"created_at\": \"0001-01-01T00:00:00Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Perusahaan Transportasi Besar\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Raya Pusat Kota No. 1000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/customer/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customer",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Update Customer",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Perusahaan Transportasi Besar\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Raya Pusat Kota No. 1000\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "9"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 16:45:03 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "845"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Berhsail memperbarui pelanggan\",\n    \"data\": {\n        \"id\": \"0\",\n        \"name\": \"Perusahaan Transportasi Besar\",\n        \"email\": \"\",\n        \"phone\": \"081234567890\",\n        \"Address\": \"Jl. Raya Pusat Kota No. 1000\",\n        \"is_active\": \"0\",\n        \"created_by\": 0,\n        \"created_at\": \"0001-01-01T00:00:00Z\",\n        \"vehicle\": [\n            {\n                \"id\": \"\",\n                \"plateNo\": \"B 1000 ABC\",\n                \"Model\": \"Truck\",\n                \"Brand\": \"Mitsubishi\",\n                \"Color\": \"Biru\",\n                \"Year\": 2020,\n                \"max_speed\": 120,\n                \"fuel_type\": \"Solar\",\n                \"is_active\": 0\n            },\n            {\n                \"id\": \"\",\n                \"plateNo\": \"B 1001 DEF\",\n                \"Model\": \"Van\",\n                \"Brand\": \"Toyota\",\n                \"Color\": \"Putih\",\n                \"Year\": 2021,\n                \"max_speed\": 150,\n                \"fuel_type\": \"Bensin\",\n                \"is_active\": 0\n            },\n            {\n                \"id\": \"\",\n                \"plateNo\": \"B 1002 GHI\",\n                \"Model\": \"Pickup\",\n                \"Brand\": \"Isuzu\",\n                \"Color\": \"Hitam\",\n                \"Year\": 2019,\n                \"max_speed\": 130,\n                \"fuel_type\": \"Solar\",\n                \"is_active\": 0\n            },\n            {\n                \"id\": \"\",\n                \"plateNo\": \"B 1999 XYZ\",\n                \"Model\": \"Sedan\",\n                \"Brand\": \"Honda\",\n                \"Color\": \"Silver\",\n                \"Year\": 2022,\n                \"max_speed\": 180,\n                \"fuel_type\": \"Bensin\",\n                \"is_active\": 0\n            }\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/customer/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customer",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Delete Customer",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "9"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 17:10:12 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "46"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Data berhasil dihapus\"\n}"
+						}
+					]
+				},
+				{
+					"name": "View Cutomer With Vehicle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/customer/:id/vehicle?page=1&limit=&search",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customer",
+								":id",
+								"vehicle"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": ""
+								},
+								{
+									"key": "search",
+									"value": null
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Vehicle",
+			"item": [
+				{
+					"name": "List Vehicle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vehicle?page=1&limit=&search&customer_id=51",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicle"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": ""
+								},
+								{
+									"key": "search",
+									"value": null
+								},
+								{
+									"key": "customer_id",
+									"value": "51"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "List Customer",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Perusahaan Transportasi Besar\",\r\n  \"email\": \"bigtransport@example.com\",\r\n  \"phone\": \"081234567890\",\r\n  \"address\": \"Jl. Raya Pusat Kota No. 1000\",\r\n  \"vehicle\": [\r\n    {\r\n      \"plate_no\": \"B 1000 ABC\",\r\n      \"model\": \"Truck\",\r\n      \"brand\": \"Mitsubishi\",\r\n      \"color\": \"Biru\",\r\n      \"year\": \"2020\",\r\n      \"max_speed\": 120,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1001 DEF\",\r\n      \"model\": \"Van\",\r\n      \"brand\": \"Toyota\",\r\n      \"color\": \"Putih\",\r\n      \"year\": \"2021\",\r\n      \"max_speed\": 150,\r\n      \"fuel_type\": \"Bensin\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1002 GHI\",\r\n      \"model\": \"Pickup\",\r\n      \"brand\": \"Isuzu\",\r\n      \"color\": \"Hitam\",\r\n      \"year\": \"2019\",\r\n      \"max_speed\": 130,\r\n      \"fuel_type\": \"Solar\"\r\n    },\r\n    {\r\n      \"plate_no\": \"B 1999 XYZ\",\r\n      \"model\": \"Sedan\",\r\n      \"brand\": \"Honda\",\r\n      \"color\": \"Silver\",\r\n      \"year\": \"2022\",\r\n      \"max_speed\": 180,\r\n      \"fuel_type\": \"Bensin\"\r\n    }\r\n  ]\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/customer",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"customer"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Date",
+									"value": "Wed, 10 Sep 2025 13:47:51 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Content-Length",
+									"value": "333"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self'"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, Content-Type, Authorization"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, POST, PUT, DELETE, OPTIONS"
+								},
+								{
+									"key": "X-Xss-Protection",
+									"value": "0"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "Cross-Origin-Embedder-Policy",
+									"value": "require-corp"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "X-Dns-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 200,\n    \"message\": \"Inquiry pengguna berhasil\",\n    \"data\": [\n        {\n            \"id\": 9,\n            \"name\": \"Perusahaan Transportasi Besar\",\n            \"email\": \"bigtransport@example.com\",\n            \"phone\": \"081234567890\",\n            \"Address\": \"Jl. Raya Pusat Kota No. 1000\",\n            \"is_active\": \"1\",\n            \"created_by\": 0,\n            \"created_at\": \"0001-01-01T00:00:00Z\"\n        }\n    ],\n    \"paging\": {\n        \"page\": 0,\n        \"size\": 10,\n        \"total_item\": 1,\n        \"total_page\": 1\n    }\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+}
