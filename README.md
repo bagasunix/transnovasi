@@ -1,5 +1,28 @@
 # TRANSNOVASI API
 
+
+## Technologies Used
+
+- [Go](https://golang.org/)
+- [Fiber](github.com/gofiber/fiber/v2)
+- [Redis](https://redis.io/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Logger Phuslu](github.com/phuslu/log)
+
+## Prerequisites
+
+- Docker
+- Docker Compose
+- Go (if running without Docker)
+- Redis
+- Postgresql
+
+## Configuration
+
+The configuration file `config.yaml` should be placed in the `config` directory. This file will be mounted into the Docker container.
+
 ## 🚀 Getting Started
 
 ### 1. Clone & Setup
@@ -11,9 +34,13 @@ cd transnovasi
 ```bash
 docker-compose up --build
 ```
+### 3. Run the application along with its dependencies:
+```sh
+docker-compose up
+```
 - App runs on: http://localhost:8080
 
-### 3. Tech Stack
+### 4. Tech Stack
 ```bash
 Golang
 Fiber
@@ -23,7 +50,8 @@ Redis
 phuslu/log
 ```
 
-### 4. Add Sample Postman Curl
+### 5. Add Sample Postman Curl
+#### Auth API
 - Register User
 ```bash
 curl --location 'http://localhost:8080/api/v1/auth/register' \
