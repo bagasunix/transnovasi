@@ -37,6 +37,7 @@ type CustomerUsecase interface {
 	ViewCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[*responses.CustomerResponse])
 	DeleteCustomer(ctx context.Context, request *requests.EntityId) (response responses.BaseResponse[any])
 	UpdateCustomer(ctx context.Context, request *requests.UpdateCustomer) (response responses.BaseResponse[*responses.CustomerResponse])
+	ViewCustomerWithVehicle(ctx context.Context, request *requests.BaseVehicle) (response responses.BaseResponse[[]responses.VehicleResponse])
 }
 
 func NewCustUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories, redis *redis.Client) CustomerUsecase {
@@ -499,4 +500,84 @@ func (c *custUsecase) DeleteCustomer(ctx context.Context, request *requests.Enti
 	response.Code = fiber.StatusOK
 	return response
 
+}
+func (c *custUsecase) ViewCustomerWithVehicle(ctx context.Context, request *requests.BaseVehicle) (response responses.BaseResponse[[]responses.VehicleResponse]) {
+	if err := request.Validate(); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Validasi error"
+		response.Errors = err.Error()
+		return response
+	}
+
+	intPage, _ := strconv.Atoi(request.Page)
+	intLimit, _ := strconv.Atoi(request.Limit)
+	paramID, _ := strconv.Atoi(request.CustomerID)
+	// --- Redis key berdasarkan customer ID
+	cacheKey := fmt.Sprintf("vehicles:customer:%s:search=%s:page=%d:limit=%d", paramID, request.Search, intPage, intLimit)
+	countKey := fmt.Sprintf("vehicles:customer:%s:count:search=%s", request.CustomerID, request.Search)
+	offset, limit := helpers.CalculateOffsetAndLimit(intPage, intLimit)
+
+	//  Cek Redis dulu
+	var resVehicle []responses.VehicleResponse
+	val, err := c.redis.Get(ctx, cacheKey).Result()
+	if err == nil {
+		// Cache hit, unmarshal JSON
+		if err := json.Unmarshal([]byte(val), &resVehicle); err == nil {
+			response.Data = &resVehicle
+			response.Message = "Inquiry kendaraan berhasil"
+			response.Code = fiber.StatusOK
+			return response
+		}
+	}
+
+	//  Ambil dari DB
+	checkVehicle := c.repo.GetVehicle().GetAllByCustomerID(ctx, paramID, limit, offset, request.Search)
+	if checkVehicle.Error != nil {
+		response.Code = 400
+		response.Message = "Gagal menarik data"
+		response.Errors = checkVehicle.Error.Error()
+		return response
+	}
+	// Calculate total items and total pages
+	totalItems, err := c.repo.GetVehicle().CountVehicle(ctx, request.Search)
+	if err != nil {
+		response.Code = 400
+		response.Message = "Gagal menarik data"
+		response.Errors = err.Error()
+		return response
+	}
+	totalPages := (totalItems + limit - 1) / limit
+
+	if len(checkVehicle.Value) != 0 {
+		resVehicle = make([]responses.VehicleResponse, 0, len(checkVehicle.Value))
+		for _, v := range checkVehicle.Value {
+			resVehicle = append(resVehicle, responses.VehicleResponse{
+				ID:       strconv.Itoa(v.ID),
+				Brand:    v.Brand,
+				Color:    v.Color,
+				FuelType: v.FuelType,
+				MaxSpeed: v.MaxSpeed,
+				Model:    v.Model,
+				PlateNo:  v.PlateNo,
+				Year:     v.Year,
+				IsActive: v.IsActive,
+			})
+		}
+	}
+
+	// Simpan ke Redis dengan expire 5 menit
+	data, _ := json.Marshal(resVehicle)
+	c.redis.Set(ctx, cacheKey, data, 5*time.Minute)
+	c.redis.Set(ctx, countKey, totalItems, 5*time.Minute)
+
+	response.Data = &resVehicle
+	response.Paging = &responses.PageMetadata{
+		Page:      intPage,
+		Size:      limit,
+		TotalItem: totalItems,
+		TotalPage: totalPages,
+	}
+	response.Message = "Inquiry kendaraan berhasil"
+	response.Code = fiber.StatusOK
+	return response
 }

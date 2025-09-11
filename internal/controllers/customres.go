@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/phuslu/log"
 
@@ -68,6 +70,12 @@ func (c *CustomerController) ViewCustomer(ctx *fiber.Ctx) error {
 		response.Errors = "ID tidak ditemukan"
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
+	if _, err := strconv.Atoi(id); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID harus berupa angka"
+		return ctx.Status(response.Code).JSON(response)
+	}
 
 	request.Id = id
 	response = c.usecase.ViewCustomer(ctx.Context(), request)
@@ -87,6 +95,13 @@ func (c *CustomerController) UpdateCustomer(ctx *fiber.Ctx) error {
 		response.Message = "Invalid request"
 		response.Errors = "ID tidak ditemukan"
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+
+	if _, err := strconv.Atoi(id); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID harus berupa angka"
+		return ctx.Status(response.Code).JSON(response)
 	}
 
 	if err := ctx.BodyParser(request); err != nil {
@@ -114,9 +129,41 @@ func (c *CustomerController) DeleteCustomer(ctx *fiber.Ctx) error {
 		response.Errors = "ID tidak ditemukan"
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
+	if _, err := strconv.Atoi(id); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID harus berupa angka"
+		return ctx.Status(response.Code).JSON(response)
+	}
 
 	request.Id = id
 	response = c.usecase.DeleteCustomer(ctx.Context(), request)
+	if response.Errors != "" {
+		return ctx.Status(response.Code).JSON(response)
+	}
+
+	return ctx.Status(response.Code).JSON(response)
+}
+func (c *CustomerController) ViewCustomerWithVehicle(ctx *fiber.Ctx) error {
+	request := new(requests.BaseVehicle)
+	var response responses.BaseResponse[[]responses.VehicleResponse]
+
+	id := ctx.Params("id")
+	if id == "" {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID tidak ditemukan"
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	}
+	if _, err := strconv.Atoi(id); err != nil {
+		response.Code = fiber.StatusBadRequest
+		response.Message = "Invalid request"
+		response.Errors = "ID harus berupa angka"
+		return ctx.Status(response.Code).JSON(response)
+	}
+
+	request.CustomerID = id
+	response = c.usecase.ViewCustomerWithVehicle(ctx.Context(), request)
 	if response.Errors != "" {
 		return ctx.Status(response.Code).JSON(response)
 	}

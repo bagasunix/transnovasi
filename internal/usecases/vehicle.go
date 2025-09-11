@@ -70,8 +70,8 @@ func (v *vehicleUsecase) ListVehicle(ctx context.Context, request *requests.Base
 		countKey = fmt.Sprintf("vehicles:customer:%s:count:search=%s", request.CustomerID, request.Search)
 	} else {
 		// Ambil semua kendaraan (global)
-		cacheKey = fmt.Sprintf("vehicles:search=%s:page=%d:limit=%d", request.Search, intPage, intLimit)
-		countKey = fmt.Sprintf("vehicles:count:search=%s", request.Search)
+		cacheKey = fmt.Sprintf("vehicles:all:search=%s:page=%d:limit=%d", request.Search, intPage, intLimit)
+		countKey = fmt.Sprintf("vehicles:all:count:search=%s", request.Search)
 	}
 
 	var vehicleResponse []responses.VehicleResponse
@@ -142,7 +142,7 @@ func (v *vehicleUsecase) ListVehicle(ctx context.Context, request *requests.Base
 		TotalItem: totalItems,
 		TotalPage: totalPages,
 	}
-	response.Message = "Inquiry pelanggan berhasil"
+	response.Message = "Inquiry kendaraan berhasil"
 	response.Code = fiber.StatusOK
 	return response
 }
