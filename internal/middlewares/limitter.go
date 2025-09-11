@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"context"
 	"fmt"
 	"math"
 	"strconv"
@@ -15,7 +14,7 @@ import (
 
 func HybridRateLimiter(redisClient *redis.Client, cfg *env.Cfg) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		ctx := context.Background()
+		ctx := c.UserContext() // pakai context Fiber
 		ip := c.IP()
 		now := time.Now().Unix()
 
@@ -25,32 +24,46 @@ func HybridRateLimiter(redisClient *redis.Client, cfg *env.Cfg) fiber.Handler {
 		refillRate := float64(cfg.Server.RateLimiter.Limit) / cfg.Server.RateLimiter.Duration.Seconds()
 		capacity := cfg.Server.RateLimiter.Limit
 
-		pipe := redisClient.TxPipeline()
-		// Ambil token dan timestamp terakhir
-		vals, _ := redisClient.HMGet(ctx, bucketKey, "tokens", "ts").Result()
+		vals, err := redisClient.HMGet(ctx, bucketKey, "tokens", "ts").Result()
+		if err != nil && err != redis.Nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code":    fiber.StatusInternalServerError,
+				"error":   "server_error",
+				"message": "cannot fetch token bucket from redis",
+			})
+		}
+
 		tokens, _ := strconv.ParseFloat(fmt.Sprint(vals[0]), 64)
 		lastTs, _ := strconv.ParseInt(fmt.Sprint(vals[1]), 10, 64)
-
-		if lastTs == 0 { // belum ada data, inisialisasi
+		if lastTs == 0 {
 			tokens = float64(capacity)
 			lastTs = now
 		}
 
-		// Hitung refill
 		elapsed := now - lastTs
 		tokens = math.Min(float64(capacity), tokens+float64(elapsed)*refillRate)
 		lastTs = now
 
-		// Ambil 1 token
 		if tokens < 1 {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"error": "token bucket empty"})
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+				"code":    fiber.StatusTooManyRequests,
+				"error":   "rate_limit",
+				"message": "token bucket empty, too many requests",
+			})
 		}
 		tokens--
 
+		pipe := redisClient.TxPipeline()
 		// Simpan kembali
 		pipe.HSet(ctx, bucketKey, "tokens", tokens, "ts", lastTs)
 		pipe.Expire(ctx, bucketKey, cfg.Server.RateLimiter.Duration*2)
-		_, _ = pipe.Exec(ctx)
+		if _, err := pipe.Exec(ctx); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code":    fiber.StatusInternalServerError,
+				"error":   "server_error",
+				"message": "cannot update token bucket in redis",
+			})
+		}
 
 		// ----- SLIDING WINDOW -----
 		winSize := int64(cfg.Server.RateLimiter.Duration.Seconds())
@@ -59,25 +72,47 @@ func HybridRateLimiter(redisClient *redis.Client, cfg *env.Cfg) fiber.Handler {
 		keyCurr := fmt.Sprintf("sw:%s:%d", ip, currWin)
 		keyPrev := fmt.Sprintf("sw:%s:%d", ip, prevWin)
 
-		currCount, _ := redisClient.Incr(ctx, keyCurr).Result()
+		currCount, err := redisClient.Incr(ctx, keyCurr).Result()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code":    fiber.StatusInternalServerError,
+				"error":   "server_error",
+				"message": "cannot increment sliding window",
+			})
+		}
 		if currCount == 1 {
 			redisClient.Expire(ctx, keyCurr, cfg.Server.RateLimiter.Duration*2)
 		}
-		prevCount, _ := redisClient.Get(ctx, keyPrev).Int64()
+
+		prevCount, err := redisClient.Get(ctx, keyPrev).Int64()
+		if err != nil && err != redis.Nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"code":    fiber.StatusInternalServerError,
+				"error":   "server_error",
+				"message": "cannot fetch previous sliding window",
+			})
+		}
 
 		elapsedWin := now % winSize
 		est := float64(currCount) + float64(prevCount)*(1-float64(elapsedWin)/float64(winSize))
 
 		if est > float64(cfg.Server.RateLimiter.Limit) {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"error": "sliding window exceeded"})
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+				"code":    fiber.StatusTooManyRequests,
+				"error":   "rate_limit",
+				"message": "sliding window exceeded, too many requests",
+			})
 		}
 
-		// ----- ADAPTIVE (contoh sederhana) -----
+		// ----- ADAPTIVE -----
 		// kalau request > 3x limit → penalti (turunkan refillRate sementara)
 		if est > float64(cfg.Server.RateLimiter.Limit*3) {
-			// turunkan kapasitas refill untuk IP ini
 			redisClient.Set(ctx, fmt.Sprintf("penalty:%s", ip), "1", 5*time.Minute)
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"error": "adaptive block triggered"})
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+				"code":    fiber.StatusTooManyRequests,
+				"error":   "rate_limit",
+				"message": "adaptive block triggered, request limit exceeded",
+			})
 		}
 
 		return c.Next()
