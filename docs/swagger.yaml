@@ -1,0 +1,76 @@
+definitions:
+  requests.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  responses.BaseResponseError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      errors:
+        example: record not found
+        type: string
+      message:
+        example: email atau password salah, silahkan coba lagi
+        type: string
+    type: object
+  responses.BaseResponseLogin:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        $ref: '#/definitions/responses.ResponseLogin'
+      message:
+        example: Pengguna berhasil masuk
+        type: string
+    type: object
+  responses.ResponseLogin:
+    properties:
+      id:
+        type: string
+      token:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Autentikasi pengguna menggunakan email dan password
+      parameters:
+      - description: Login Request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseLogin'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponseError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/responses.BaseResponseError'
+      summary: Login pengguna
+      tags:
+      - Auth
+swagger: "2.0"
