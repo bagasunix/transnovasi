@@ -10,6 +10,9 @@
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 - [Logger Phuslu](github.com/phuslu/log)
+- [Swagger](github.com/gofiber/swagger)
+
+---
 
 ## Prerequisites
 
@@ -19,9 +22,25 @@
 - Redis
 - Postgresql
 
+---
+
+## ✨ Features
+
+- User Authentication (JWT)
+- Customer CRUD (with soft delete)
+- Rate Limiting Windows Sliding 
+- Docker & Docker Compose support
+- Swagger documentation
+- Logging via Phuslu
+
+---
+
+
 ## Configuration
 
 The configuration file `config.yaml` should be placed in the `config` directory. This file will be mounted into the Docker container.
+
+---
 
 ## Database Setup
 
@@ -49,6 +68,7 @@ CREATE DATABASE transnovasi;
 ```
 Make sure the database name, user, and password match with the configuration in "config.yaml".
 
+---
 
 ## 🚀 Getting Started
 

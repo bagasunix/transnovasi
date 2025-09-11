@@ -49,8 +49,8 @@ func NewPostgresDB(ctx context.Context, cfg *configs.DBConfig, logger *log.Logge
 	errors.HandlerWithOSExit(logger, db.WithContext(ctx).Use(dbresolver.Register(dbresolver.Config{}).
 		SetMaxOpenConns(cfg.MaxOpenConns).
 		SetMaxIdleConns(cfg.MaxIdleConns).
-		SetConnMaxLifetime(cfg.ConnMaxLifetime*time.Minute).
-		SetConnMaxIdleTime(cfg.ConnMaxIdleTime*time.Minute)),
+		SetConnMaxLifetime(cfg.ConnMaxLifetime).
+		SetConnMaxIdleTime(cfg.ConnMaxIdleTime)),
 		"db_resolver")
 
 	sqlDB, _ := db.DB()

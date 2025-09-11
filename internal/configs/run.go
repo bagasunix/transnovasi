@@ -23,7 +23,7 @@ func Run() {
 	db := InitDB(ctx, Cfg, logger)
 	redis := InitRedis(ctx, logger, Cfg)
 
-	app := InitFiber(ctx, Cfg)
+	app := InitFiber(ctx, Cfg, redis)
 	setup := SetupApp(&setupApp{
 		DB:    db,
 		App:   app,

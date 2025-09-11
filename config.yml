@@ -24,8 +24,8 @@ database:
   sslmode: disable
   max_connection: 300
   max_idle: 300
-  max_life_time: 5
-  max_idle_time: 5
+  max_life_time: 5m
+  max_idle_time: 5m
 
 redis:
   host: 127.0.0.1

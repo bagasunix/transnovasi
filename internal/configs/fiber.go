@@ -3,6 +3,7 @@ package configs
 import (
 	"context"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -12,10 +13,11 @@ import (
 	// ini wajib, sesuaikan dengan nama module di go.mod kamu
 
 	_ "github.com/bagasunix/transnovasi/docs"
+	"github.com/bagasunix/transnovasi/internal/middlewares"
 	"github.com/bagasunix/transnovasi/pkg/env"
 )
 
-func InitFiber(ctx context.Context, cfg *env.Cfg) *fiber.App {
+func InitFiber(ctx context.Context, cfg *env.Cfg, redis *redis.Client) *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName: cfg.App.Name,
 	})
@@ -29,6 +31,7 @@ func InitFiber(ctx context.Context, cfg *env.Cfg) *fiber.App {
 	app.Use(helmet.New())
 	app.Use(recover.New())
 	app.Use(favicon.New())
+	app.Use(middlewares.HybridRateLimiter(redis, cfg))
 
 	// route swagger UI
 	app.Use("/swagger", func(c *fiber.Ctx) error {
