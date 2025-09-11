@@ -16,6 +16,7 @@ import (
 	"github.com/bagasunix/transnovasi/internal/domains"
 	"github.com/bagasunix/transnovasi/internal/dtos/requests"
 	"github.com/bagasunix/transnovasi/internal/dtos/responses"
+	"github.com/bagasunix/transnovasi/internal/middlewares"
 	"github.com/bagasunix/transnovasi/internal/repositories"
 	"github.com/bagasunix/transnovasi/pkg/env"
 	"github.com/bagasunix/transnovasi/pkg/errors"
@@ -34,6 +35,7 @@ type authUsecase struct {
 type AuthUsecase interface {
 	LoginUser(ctx context.Context, request *requests.Login) (response responses.BaseResponse[*responses.ResponseLogin])
 	Register(ctx context.Context, request *requests.User) (response responses.BaseResponse[*responses.UserResponse])
+	LogoutUser(ctx context.Context) (response responses.BaseResponse[any])
 }
 
 func NewAuthUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo repositories.Repositories, redis *redis.Client) AuthUsecase {
@@ -163,5 +165,23 @@ func (au *authUsecase) Register(ctx context.Context, request *requests.User) (re
 	response.Code = fiber.StatusCreated
 	response.Message = "User berhasil dibuat"
 	response.Data = &resBuild
+	return response
+}
+func (au *authUsecase) LogoutUser(ctx context.Context) (response responses.BaseResponse[any]) {
+	authUser := middlewares.GetAuthClaimsFromContext(ctx)
+
+	userID := authUser.ID
+	redisKey := "auth_user:token:" + userID
+
+	// Hapus token di Redis
+	if err := au.redis.Del(ctx, redisKey).Err(); err != nil {
+		response.Code = fiber.StatusInternalServerError
+		response.Message = "Gagal logout"
+		response.Errors = err.Error()
+		return response
+	}
+
+	response.Code = fiber.StatusOK
+	response.Message = "Logout berhasil"
 	return response
 }

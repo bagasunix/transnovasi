@@ -52,6 +52,11 @@ phuslu/log
 
 ### 5. Add Sample Postman Curl
 #### Auth API
+- Logout User
+```bash
+curl --location 'http://localhost:8080/api/v1/auth/register' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMSIsIm5hbWUiOiJBbGRpbm8gUHJhdGFtYSBCYWdhc2thcmEiLCJzZXgiOiIxIiwiZW1haWwiOiJhbGRpbm9wcmF0YW1hMTVAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaXNfYWN0aXZlIjoiMSIsImNyZWF0ZWRfYXQiOiIwMDAxLTAxLTAxVDAwOjAwOjAwWiJ9LCJleHAiOjE3NTc2MjI5NDV9.37oDXiK--6-anBWYT-Zq5E2jyntpMNY7GEiQ4wW3hExdXw9Y17WWDW0PRSdS3icFTOy9OmxZMsSz8vfocZZBdg'
+```
 - Register User
 ```bash
 curl --location 'http://localhost:8080/api/v1/auth/register' \
@@ -181,4 +186,23 @@ curl --location --request PUT 'http://localhost:8080/api/v1/customer/1' \
 ```bash
 curl --location 'http://localhost:8080/api/v1/vehicle?page=1&limit=&search&customer_id=51' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMSIsIm5hbWUiOiJBbGRpbm8gUHJhdGFtYSBCYWdhc2thcmEiLCJzZXgiOiIxIiwiZW1haWwiOiJhbGRpbm9wcmF0YW1hMTVAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaXNfYWN0aXZlIjoiMSIsImNyZWF0ZWRfYXQiOiIwMDAxLTAxLTAxVDAwOjAwOjAwWiJ9LCJleHAiOjE3NTc2MjI5NDV9.37oDXiK--6-anBWYT-Zq5E2jyntpMNY7GEiQ4wW3hExdXw9Y17WWDW0PRSdS3icFTOy9OmxZMsSz8vfocZZBdg'
+```
+## 🔐 Endpoint Access
+### Auth Management
+```bash
+POST /api/auth/logout          → ADMIN, OPERATOR, USER
+POST /api/auth                → ADMIN, OPERATOR, USER
+```
+### Customer Management (CRUD)
+```bash
+GET    /api/v1/customers                      → ADMIN, OPERATOR, USER
+GET    /api/v1/customers/:id/vehicle          → ADMIN, OPERATOR, USER
+POST   /api/v1/customers                      → ADMIN, OPERATOR
+GET    /api/v1/customers/:id                  → ADMIN, OPERATOR, USER
+PUT    /api/v1/customers/:id                  → ADMIN, OPERATOR  
+DELETE /api/v1/customers/:id                  → ADMIN only
+```
+### Vehicle Management
+```bash
+GET /api/v1/vehicle          → ADMIN, OPERATOR, USER
 ```

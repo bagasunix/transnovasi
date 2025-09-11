@@ -29,7 +29,7 @@ func NewHttpHandler(r RouteConfig) *fiber.App {
 	// Initialize middleware
 	authMiddleware := middlewares.NewAuthMiddleware(r.Redis, r.Logger, r.Cfg)
 	// Handlers
-	handlers.MakeAuthHandler(r.AuthController, r.App.Group(r.Cfg.Server.Version+"/auth").(*fiber.Group))
+	handlers.MakeAuthHandler(r.AuthController, r.App.Group(r.Cfg.Server.Version+"/auth").(*fiber.Group), authMiddleware)
 	handlers.MakeCustHandler(r.CustController, r.App.Group(r.Cfg.Server.Version+"/customer").(*fiber.Group), authMiddleware)
 	handlers.MakeVehicleHandler(r.VehicleController, r.App.Group(r.Cfg.Server.Version+"/vehicle").(*fiber.Group), authMiddleware)
 	return r.App

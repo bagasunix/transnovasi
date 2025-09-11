@@ -6,7 +6,8 @@ import (
 	"github.com/bagasunix/transnovasi/internal/controllers"
 )
 
-func MakeAuthHandler(controller *controllers.AuthController, router fiber.Router) {
+func MakeAuthHandler(controller *controllers.AuthController, router fiber.Router, authMiddleware fiber.Handler) {
 	router.Post("", controller.LoginUser)
 	router.Post("register", controller.Register)
+	router.Get("logout", authMiddleware, controller.Logout)
 }

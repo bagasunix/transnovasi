@@ -59,3 +59,10 @@ func (ac *AuthController) Register(ctx *fiber.Ctx) error {
 
 	return ctx.Status(result.Code).JSON(result)
 }
+func (ac *AuthController) Logout(ctx *fiber.Ctx) error {
+	result := ac.usecase.LogoutUser(ctx.Context())
+	if result.Errors != "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(result)
+	}
+	return ctx.Status(result.Code).JSON(result)
+}
