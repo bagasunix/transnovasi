@@ -20,6 +20,6 @@ CREATE INDEX idx_users_role_active ON users(role, is_active) WHERE deleted_at IS
 -- Password : password123
 INSERT INTO users (name, sex, email, password, role, is_active)
 VALUES
-('Aldino Pratama Bagaskara', 1, 'aldinopratama15@gmail.com', '$2a$04$n8Ps2Wy9Jf5/7Mc14iK2P.kryqWJeY2AFMCGQW7cl3wumFpR9yBRi', 'ADMIN', 1), 
-('Bagaskara', 1, 'aldinopratama04@gmail.com', '$2a$04$n8Ps2Wy9Jf5/7Mc14iK2P.kryqWJeY2AFMCGQW7cl3wumFpR9yBRi', 'OPERATOR', 1),
-('Aldino', 1, 'aldinopratamabagaskara@yahoocom', '$2a$04$n8Ps2Wy9Jf5/7Mc14iK2P.kryqWJeY2AFMCGQW7cl3wumFpR9yBRi', 'USER', 1);
+('Aldino Pratama Bagaskara', 1, 'emailku1@gmail.com', '$2a$04$n8Ps2Wy9Jf5/7Mc14iK2P.kryqWJeY2AFMCGQW7cl3wumFpR9yBRi', 'ADMIN', 1), 
+('Bagaskara', 1, 'emailku2@gmail.com', '$2a$04$n8Ps2Wy9Jf5/7Mc14iK2P.kryqWJeY2AFMCGQW7cl3wumFpR9yBRi', 'OPERATOR', 1),
+('Aldino', 1, 'emailku3@gmail.com', '$2a$04$n8Ps2Wy9Jf5/7Mc14iK2P.kryqWJeY2AFMCGQW7cl3wumFpR9yBRi', 'USER', 1);
