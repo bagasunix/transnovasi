@@ -23,6 +23,33 @@
 
 The configuration file `config.yaml` should be placed in the `config` directory. This file will be mounted into the Docker container.
 
+## Database Setup
+
+Before running the application, make sure you already have a PostgreSQL database created.  
+You **don’t need to create tables/columns manually** since the project uses auto migration.  
+
+### Option 1: Using psql on your host
+```sql
+CREATE DATABASE transnovasi;
+```
+### Option 2: Using docker exec (if running with Docker)
+If you’re running PostgreSQL from docker-compose, you can create the database like this:
+```bash
+# masuk ke container database
+docker exec -it transnovasi_db bash
+
+# login ke PostgreSQL (ganti user/password sesuai docker-compose)
+psql -U postgres
+
+# buat database
+CREATE DATABASE transnovasi;
+
+# keluar dari psql
+\q
+```
+Make sure the database name, user, and password match with the configuration in "config.yaml".
+
+
 ## 🚀 Getting Started
 
 ### 1. Clone & Setup
