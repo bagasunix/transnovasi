@@ -48,18 +48,6 @@ func NewAuthUsecase(logger *log.Logger, db *gorm.DB, cfg *env.Cfg, repo reposito
 	return n
 }
 
-// LoginUser godoc
-// @Summary Login pengguna
-// @Description Autentikasi pengguna menggunakan email dan password
-// @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Param   body  body  requests.Login  true  "Login Request"
-// @Success 200 {object} responses.BaseResponseLogin
-// @Failure 400 {object} responses.BaseResponseError
-// @Failure 404 {object} responses.BaseResponseError
-// @Failure 409 {object} responses.BaseResponseError
-// @Router /auth/login [post]
 func (au *authUsecase) LoginUser(ctx context.Context, request *requests.Login) (response responses.BaseResponse[*responses.ResponseLogin]) {
 	if request.Validate() != nil {
 		response.Code = fiber.StatusBadRequest

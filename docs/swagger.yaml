@@ -1,9 +1,78 @@
+basePath: /api
 definitions:
+  requests.CreateCustomer:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      vehicle:
+        items:
+          $ref: '#/definitions/requests.CreateVehicle'
+        type: array
+    type: object
+  requests.CreateVehicle:
+    properties:
+      brand:
+        type: string
+      color:
+        type: string
+      fuel_type:
+        type: string
+      max_speed:
+        type: integer
+      model:
+        type: string
+      plate_no:
+        type: string
+      year:
+        type: string
+    type: object
   requests.Login:
     properties:
       email:
         type: string
       password:
+        type: string
+    type: object
+  requests.UpdateCustomer:
+    properties:
+      address:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        description: Email   string `json:"email"`
+        type: string
+    type: object
+  requests.User:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      sex:
+        type: integer
+    type: object
+  responses.BaseResponseCustomer:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.CustomerResponse'
+      errors:
+        type: string
+      message:
         type: string
     type: object
   responses.BaseResponseError:
@@ -18,6 +87,21 @@ definitions:
         example: email atau password salah, silahkan coba lagi
         type: string
     type: object
+  responses.BaseResponseListCustomer:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.CustomerResponse'
+        type: array
+      errors:
+        type: string
+      message:
+        type: string
+      paging:
+        $ref: '#/definitions/responses.PageMetadata'
+    type: object
   responses.BaseResponseLogin:
     properties:
       code:
@@ -29,6 +113,77 @@ definitions:
         example: Pengguna berhasil masuk
         type: string
     type: object
+  responses.BaseResponseSwagger:
+    properties:
+      code:
+        example: 200
+        type: integer
+      message:
+        example: Pengguna berhasil masuk
+        type: string
+    type: object
+  responses.BaseResponseUser:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.UserResponse'
+      errors:
+        type: string
+      message:
+        type: string
+    type: object
+  responses.BaseResponseVehicleList:
+    properties:
+      code:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.VehicleResponse'
+        type: array
+      errors:
+        type: string
+      message:
+        type: string
+    type: object
+  responses.CustomerResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      deleted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+      vehicle:
+        items:
+          $ref: '#/definitions/responses.VehicleResponse'
+        type: array
+    type: object
+  responses.PageMetadata:
+    properties:
+      page:
+        type: integer
+      size:
+        type: integer
+      total_item:
+        type: integer
+      total_page:
+        type: integer
+    type: object
   responses.ResponseLogin:
     properties:
       id:
@@ -36,8 +191,57 @@ definitions:
       token:
         type: string
     type: object
+  responses.UserResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      sex:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  responses.VehicleResponse:
+    properties:
+      brand:
+        type: string
+      color:
+        type: string
+      fuel_type:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: integer
+      max_speed:
+        type: integer
+      model:
+        type: string
+      plateNo:
+        type: string
+      year:
+        type: integer
+    type: object
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: support@transnovasi.local
+    name: Developer Support
+  description: API untuk sistem Transnovasi
+  termsOfService: http://swagger.io/terms/
+  title: Transnovasi API
+  version: "1.0"
 paths:
   /auth/login:
     post:
@@ -47,7 +251,7 @@ paths:
       parameters:
       - description: Login Request
         in: body
-        name: body
+        name: request
         required: true
         schema:
           $ref: '#/definitions/requests.Login'
@@ -62,15 +266,296 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/responses.BaseResponseError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponseError'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/responses.BaseResponseError'
       summary: Login pengguna
       tags:
       - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Menghapus token pengguna dari sistem (invalidate session)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseError'
+      security:
+      - BearerAuth: []
+      summary: Logout pengguna
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Membuat akun pengguna baru
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseError'
+      summary: Daftar pengguna baru
+      tags:
+      - Auth
+  /customers:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan daftar customer dengan pagination dan optional search
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: string
+      - description: Limit per page
+        in: query
+        name: limit
+        type: string
+      - description: Search by name/email
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseListCustomer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Mendapatkan daftar customer
+      tags:
+      - Customer
+    post:
+      consumes:
+      - application/json
+      description: Membuat data customer baru beserta kendaraan opsional
+      parameters:
+      - description: Customer Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCustomer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseCustomer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Membuat customer baru
+      tags:
+      - Customer
+  /customers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Melakukan delete customer berdasarkan ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Melakukan delete customer
+      tags:
+      - Customer
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan detail customer berdasarkan ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseCustomer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Mendapatkan detail customer
+      tags:
+      - Customer
+    put:
+      consumes:
+      - application/json
+      description: Melakukan update customer berdasarkan ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Customer Request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCustomer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseCustomer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Melakukan update customer
+      tags:
+      - Customer
+  /customers/{id}/vehicles:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar kendaraan berdasarkan customer ID
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseVehicleList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Melihat kendaraan milik customer
+      tags:
+      - Customer
+  /vehicles:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of vehicles with optional filters
+      parameters:
+      - description: Search keyword for vehicle
+        in: query
+        name: search
+        type: string
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponseVehicleList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponseSwagger'
+      security:
+      - BearerAuth: []
+      summary: Get all vehicles
+      tags:
+      - Vehicle
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

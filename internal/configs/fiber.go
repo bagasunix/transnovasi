@@ -7,9 +7,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	fiberSwagger "github.com/swaggo/fiber-swagger"
+	"github.com/gofiber/swagger"
 
-	_ "github.com/bagasunix/transnovasi/docs" // docs yang digenerate swag
+	// ini wajib, sesuaikan dengan nama module di go.mod kamu
+
+	_ "github.com/bagasunix/transnovasi/docs"
 	"github.com/bagasunix/transnovasi/pkg/env"
 )
 
@@ -29,6 +31,10 @@ func InitFiber(ctx context.Context, cfg *env.Cfg) *fiber.App {
 	app.Use(favicon.New())
 
 	// route swagger UI
-	app.Get("swagger/*", fiberSwagger.WrapHandler)
+	app.Use("/swagger", func(c *fiber.Ctx) error {
+		c.Set("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval'")
+		return c.Next()
+	})
+	app.Get("swagger/*", swagger.HandlerDefault)
 	return app
 }
