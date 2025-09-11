@@ -15,7 +15,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o bin/app ./cmd/api
 
 # ---- Runtime stage ----
-FROM ubuntu:latest
+FROM alpine:latest
 
 WORKDIR /app
 
